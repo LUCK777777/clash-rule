@@ -1,0 +1,74 @@
+name: Mirror upstreams & Build & Publish Pages
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # 每日 UTC 03:00
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  mirror-build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Mirror upstream rules
+        run: |
+          python scripts/fetch.py
+
+      - name: Commit mirror updates (if any)
+        run: |
+          if [ -f MIRROR_UPDATED ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "actions@users.noreply.github.com"
+            git add mirror/ MIRROR_UPDATED
+            git commit -m "chore(mirror): update upstream rules"
+            git push
+          else
+            echo "No mirror changes."
+          fi
+
+      - name: Build final config (dist/custom.ini)
+        run: |
+          python scripts/build.py
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add dist/custom.ini
+          git commit -m "build: dist/custom.ini" || echo "no change"
+          git push || true
+
+      # 发布 GitHub Pages：把 mirror/ 同步到 gh-pages 根目录，dist/custom.ini 也发布
+      - name: Prepare Pages content
+        run: |
+          rm -rf public
+          mkdir -p public
+          # 将 mirror 下的全部文件原样放到 Pages
+          rsync -a mirror/ public/
+          # 也发布最终成品，方便直接订阅
+          mkdir -p public/dist
+          cp dist/custom.ini public/dist/custom.ini
+
+      - name: Upload artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
