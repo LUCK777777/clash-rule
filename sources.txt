@@ -6,7 +6,6 @@ https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/
 https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list
 https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list
 https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaCompanyIp.list
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/GoogleFCM/GoogleFCM.list
 https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/GoogleCN.list
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/SteamCN/SteamCN.list
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/OneDrive/OneDrive.list
