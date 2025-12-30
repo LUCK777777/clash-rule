@@ -15,48 +15,70 @@ allow_external_connections: false
 vif_only: false
 hide_vpn_icon: false
 
-# DNS 防泄漏：劫持所有外部 DNS 请求并送入内核解析
+# DNS 防泄漏：使用 egern 推荐的分流与回退配置，配合 hijack 阻断系统直连
 dns:
   bootstrap:
-    - system
-    - https://1.1.1.1/dns-query
+    - 223.5.5.5
+    - 119.29.29.29
+
   upstreams:
-    main:
-      - https://1.1.1.1/dns-query
+    国外:
+      - tls://1.1.1.1
       - https://8.8.8.8/dns-query
-    security:
-      - quic://dns.adguard-dns.com
+      - https://1.1.1.1/dns-query
+      - tls://dns.google
+    国内:
+      - tls://dns.alidns.com
+      - tls://dot.pub
+      - https://doh.pub/dns-query
+      - https://dns.alidns.com/dns-query
+    腾讯:
+      - tls://dot.pub
+      - https://doh.pub/dns-query
+    阿里巴巴:
+      - tls://dns.alidns.com
+      - https://dns.alidns.com/dns-query
+    字节跳动:
+      - 180.184.2.2
+      - 180.184.1.1
+
   forward:
-    - wildcard:
-        match: '*.lan'
-        value: system
-    - wildcard:
-        match: '*.local'
-        value: system
     - proxy_rule_set:
-        match: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list
-        value: system
+        match: https://rule.kelee.one/Loon/DouYin.lsr
+        value: 字节跳动
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/TestFlight.lsr
+        value: 国外
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/Apple.lsr
+        value: 国内
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/Alibaba.lsr
+        value: 阿里巴巴
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/Tencent.lsr
+        value: 腾讯
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/ChinaMax.lsr
+        value: 国内
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/Global.lsr
+        value: 国外
+        disabled: false
     - wildcard:
-        match: '*'
-        value: main
-  block_ips:
-    - 0.0.0.0/8
-    - 10.0.0.0/8
-    - 100.64.0.0/10
-    - 127.0.0.0/8
-    - 169.254.0.0/16
-    - 172.16.0.0/12
-    - 192.0.0.0/24
-    - 192.0.2.0/24
-    - 192.168.0.0/16
-    - 198.18.0.0/15
-    - 198.51.100.0/24
-    - 203.0.113.0/24
-    - 224.0.0.0/4
-    - 240.0.0.0/4
+        match: "*"
+        value: 国外
+        disabled: false
+
   public_ip_lookup_url: https://ifconfig.me/ip
 
-# 将外部 DNS 请求劫持到内核，配合上方的 forward 与 block_ips 避免泄漏
+# 将外部 DNS 请求劫持到内核，配合上方的 forward 避免泄漏
 hijack_dns:
   - '*'
 

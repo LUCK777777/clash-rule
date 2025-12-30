@@ -23,6 +23,7 @@
 ## Egern 聚合订阅模板
 - 位置：`templates/egern.yaml`
 - 作用：为 Egern 提供适配 CF-Workers-SUB 聚合订阅的 Profile 片段，内置 DNS 防泄漏、劫持 DNS 及自动更新示例。
+- DNS：采用 Egern 官方示例的多上游/规则分流（含阿里/腾讯/字节跳动/Apple 等规则集），并统一劫持系统 DNS，避免泄漏。
 - 用法示例：
   - 将 CF-Workers-SUB 输出的订阅链接追加参数：`?token=YOUR_TOKEN&target=egern&config=https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/templates/egern.yaml`
   - 或在 Egern 的 Profile.yaml 中，直接将 `auto_update.url` 指向你的聚合订阅地址。
