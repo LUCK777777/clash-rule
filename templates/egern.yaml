@@ -10,7 +10,7 @@ hijack_dns:
 # 延迟测试 URL（给 auto_test 用）
 proxy_latency_test_url: "http://www.gstatic.com/generate_204"
 
-# ========== DNS（加入你要的 DNS 分流） ==========
+# ========== DNS（DNS 分流） ==========
 dns:
   bootstrap:
     - 223.5.5.5
@@ -59,7 +59,7 @@ dns:
     - proxy_rule_set:
         match: "https://rule.kelee.one/Loon/Global.lsr"
         value: "国外"
-    # 额外加一条：.cn 默认走国内 DNS（更符合“国内直连优先”）
+    # 额外加一条：.cn 默认走国内 DNS
     - wildcard:
         match: "*.cn"
         value: "国内"
@@ -69,14 +69,14 @@ dns:
 
   public_ip_lookup_url: "https://ifconfig.me/ip"
 
-# ========== 策略组（按你的 Clash 分组来） ==========
+# ========== 策略组（按 Clash 分组） ==========
 policy_groups:
   # ---- 节点来源（外部订阅）----
   - external:
       name: "☑️ 手动切换"
       type: select
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: ".*"
       update_interval: 86400
 
@@ -84,16 +84,16 @@ policy_groups:
       name: "自建节点"
       type: select
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: "(自建|DIY|VPS|MyNode|Self|NAT)"
       update_interval: 86400
 
-  # ---- 地区自动测速（对应你 ini 里的 url-test 组）----
+  # ---- 地区自动测速 ----
   - external:
       name: "香港节点"
       type: auto_test
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: "(港|HK|hk|Hong Kong|HongKong|hongkong|HKG)"
       interval: 86400
       tolerance: 100
@@ -104,7 +104,7 @@ policy_groups:
       name: "日本节点"
       type: auto_test
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: "(日本|川日|东京|大阪|泉日|埼玉|沪日|深日|[^-]日|JP|Japan|Tokyo|NRT|KIX)"
       interval: 86400
       tolerance: 100
@@ -115,7 +115,7 @@ policy_groups:
       name: "美国节点"
       type: auto_test
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: "(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|US|United States|ATL|BUF|DFW|EWR|IAD|LAX|MCI|MIA|ORD|PHX|PDX|SEA|SJC)"
       interval: 86400
       tolerance: 150
@@ -126,7 +126,7 @@ policy_groups:
       name: "台湾节点"
       type: auto_test
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: "(台|新北|彰化|TW|Taiwan|TPE|KHH)"
       interval: 86400
       tolerance: 100
@@ -137,7 +137,7 @@ policy_groups:
       name: "狮城节点"
       type: auto_test
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: "(新加坡|坡|狮城|SG|Singapore|SIN)"
       interval: 86400
       tolerance: 100
@@ -148,19 +148,19 @@ policy_groups:
       name: "韩国节点"
       type: auto_test
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: "(KR|Korea|KOR|Seoul|首尔|春川|韩|韓|ICN)"
       interval: 86400
       tolerance: 100
       timeout: 5
       update_interval: 86400
 
-  # ---- 给“奈飞视频/国外媒体”补一个“节点名筛选池”（对应你 ini 里组尾部的正则）----
+  # ---- 节点名筛选池 ----
   - external:
       name: "奈飞节点池"
       type: select
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: "(NF|奈飞|Netflix|NETFLIX|Media|MITM)"
       update_interval: 86400
 
@@ -168,11 +168,11 @@ policy_groups:
       name: "媒体节点池"
       type: select
       urls:
-        - "__SUB_URL__"
+        - "https://ch.liy343012.workers.dev/key?sub"
       filter: "(MITM|emby|Emby)"
       update_interval: 86400
 
-  # ---- 入口组：节点选择（按你的 ini：自建 + 各地区 + 手动 + DIRECT）----
+  # ---- 入口组：节点选择 ----
   - select:
       name: "节点选择"
       policies:
@@ -186,7 +186,7 @@ policy_groups:
         - "☑️ 手动切换"
         - "DIRECT"
 
-  # ---- 业务组（与你 ruleset 同名）----
+  # ---- 业务组 ----
   - select:
       name: "电报消息"
       policies:
@@ -456,7 +456,7 @@ policy_groups:
         - "韩国节点"
         - "☑️ 手动切换"
 
-# ========== 规则（按你的 custom.ini 顺序） ==========
+# ========== 规则 ==========
 rules:
   # —— 银行/支付（置顶直连）——
   - rule_set:
@@ -471,27 +471,13 @@ rules:
       match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/UnionPay/UnionPay.list"
       policy: "全球直连"
       update_interval: 86400
-  - domain_suffix:
-      match: "cmbchina.com"
-      policy: "全球直连"
-  - domain_suffix:
-      match: "cmbchina.com.cn"
-      policy: "全球直连"
-  - domain_suffix:
-      match: "icbc.com.cn"
-      policy: "全球直连"
-  - domain_suffix:
-      match: "ccb.com"
-      policy: "全球直连"
-  - domain_suffix:
-      match: "boc.cn"
-      policy: "全球直连"
-  - domain_suffix:
-      match: "abchina.com"
-      policy: "全球直连"
-  - domain_suffix:
-      match: "abchina.com.cn"
-      policy: "全球直连"
+  - domain_suffix: { match: "cmbchina.com", policy: "全球直连" }
+  - domain_suffix: { match: "cmbchina.com.cn", policy: "全球直连" }
+  - domain_suffix: { match: "icbc.com.cn", policy: "全球直连" }
+  - domain_suffix: { match: "ccb.com", policy: "全球直连" }
+  - domain_suffix: { match: "boc.cn", policy: "全球直连" }
+  - domain_suffix: { match: "abchina.com", policy: "全球直连" }
+  - domain_suffix: { match: "abchina.com.cn", policy: "全球直连" }
 
   # —— 基础直连/白名单 ——
   - rule_set:
@@ -511,7 +497,7 @@ rules:
       policy: "全球直连"
       update_interval: 86400
 
-  # —— 广告/净化（按你的 ini：直接 REJECT）——
+  # —— 广告/净化（REJECT）——
   - rule_set:
       match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list"
       policy: "REJECT"
@@ -539,7 +525,7 @@ rules:
       policy: "全球直连"
       update_interval: 86400
 
-  # —— 系统服务（与策略组同名）——
+  # —— 系统服务 ——
   - rule_set:
       match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Bing.list"
       policy: "Ⓜ️ 微软Bing"
@@ -583,7 +569,7 @@ rules:
       policy: "OpenAi"
       update_interval: 86400
 
-  # —— 媒体 / 社交（放在 GFW 之前）——
+  # —— 媒体 / 社交 ——
   - rule_set:
       match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Twitter/Twitter.list"
       policy: "️ X"
@@ -621,6 +607,7 @@ rules:
       match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Emby/Emby.list"
       policy: "国外媒体"
       update_interval: 86400
+
   - rule_set:
       match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/BilibiliHMT.list"
       policy: "哔哩哔哩"
@@ -634,7 +621,7 @@ rules:
       policy: "国内媒体"
       update_interval: 86400
 
-  # —— GFW/代理/直连集合（放在媒体后）——
+  # —— GFW/代理/直连集合 ——
   - rule_set:
       match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list"
       policy: "节点选择"
@@ -658,7 +645,7 @@ rules:
       policy: "全球直连"
       update_interval: 86400
 
-  # —— 类似 []GEOIP,LAN：补上常见内网段直连（更稳）——
+  # —— 内网直连（稳）——
   - ip_cidr: { match: "127.0.0.0/8", policy: "全球直连" }
   - ip_cidr: { match: "10.0.0.0/8", policy: "全球直连" }
   - ip_cidr: { match: "172.16.0.0/12", policy: "全球直连" }
@@ -668,7 +655,7 @@ rules:
   - ip_cidr6: { match: "fc00::/7", policy: "全球直连" }
   - ip_cidr6: { match: "fe80::/10", policy: "全球直连" }
 
-  # —— 类似 []GEOIP,CN：CN 直连（你要更“国内优先”可以保留）——
+  # —— CN 直连 ——
   - geoip:
       match: "CN"
       policy: "全球直连"
