@@ -4,10 +4,6 @@
 #   https://sub.example.com/auto?token=YOUR_TOKEN&target=egern&config=https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/templates/egern.yaml
 # 若直接导入到 Egern，可在 Profile.yaml 中将 auto_update.url 替换为你的聚合订阅地址。
 
-# 自动更新配置：把 url 改成你在 CF-Workers-SUB 输出的聚合订阅地址，确保客户端自动拉取最新节点。
-auto_update:
-  url: https://sub.example.com/auto?token=YOUR_TOKEN&target=egern
-  interval: 86400
 
 # 通用开关
 mode: rule
