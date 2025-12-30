@@ -1,0 +1,373 @@
+---
+# Egern 聚合订阅模板（可与 CF-Workers-SUB / subconverter 一起使用）。
+# 用法示例：在聚合出的订阅后附加 target=egern 并追加 config 指向本文件：
+#   https://sub.example.com/auto?token=YOUR_TOKEN&target=egern&config=https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/templates/egern.yaml
+# 若直接导入到 Egern，可在 Profile.yaml 中将 auto_update.url 替换为你的聚合订阅地址。
+
+# 自动更新配置：把 url 改成你在 CF-Workers-SUB 输出的聚合订阅地址，确保客户端自动拉取最新节点。
+auto_update:
+  url: https://sub.example.com/auto?token=YOUR_TOKEN&target=egern
+  interval: 86400
+
+# 通用开关
+mode: rule
+log-level: info
+ipv6: false
+allow_external_connections: false
+vif_only: false
+hide_vpn_icon: false
+
+# DNS 防泄漏：使用 egern 推荐的分流与回退配置，配合 hijack 阻断系统直连
+dns:
+  bootstrap:
+    - 223.5.5.5
+    - 119.29.29.29
+
+  upstreams:
+    国外:
+      - tls://1.1.1.1
+      - https://8.8.8.8/dns-query
+      - https://1.1.1.1/dns-query
+      - tls://dns.google
+    国内:
+      - tls://dns.alidns.com
+      - tls://dot.pub
+      - https://doh.pub/dns-query
+      - https://dns.alidns.com/dns-query
+    腾讯:
+      - tls://dot.pub
+      - https://doh.pub/dns-query
+    阿里巴巴:
+      - tls://dns.alidns.com
+      - https://dns.alidns.com/dns-query
+    字节跳动:
+      - 180.184.2.2
+      - 180.184.1.1
+
+  forward:
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/DouYin.lsr
+        value: 字节跳动
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/TestFlight.lsr
+        value: 国外
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/Apple.lsr
+        value: 国内
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/Alibaba.lsr
+        value: 阿里巴巴
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/Tencent.lsr
+        value: 腾讯
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/ChinaMax.lsr
+        value: 国内
+        disabled: false
+    - proxy_rule_set:
+        match: https://rule.kelee.one/Loon/Global.lsr
+        value: 国外
+        disabled: false
+    - wildcard:
+        match: "*"
+        value: 国外
+        disabled: false
+
+  public_ip_lookup_url: https://ifconfig.me/ip
+
+# 将外部 DNS 请求劫持到内核，配合上方的 forward 避免泄漏
+hijack_dns:
+  - '*'
+
+# 节点与分流策略组：默认保留直连备选，订阅节点会追加到各组，可按需调整测速 URL
+proxy_latency_test_url: https://www.gstatic.com/generate_204
+proxy_latency_test_interval: 600
+proxy_latency_test_tolerance: 50
+
+direct_latency_test_url: https://www.baidu.com
+
+dns_hijack_latency_test_url: https://1.1.1.1/dns-query
+
+dns_hijack_latency_test_tolerance: 200
+
+dns_hijack_latency_test_interval: 600
+
+proxy_groups:
+  - name: "🚀 节点选择"
+    type: select
+    proxies:
+      - "♻️ 自动选择"
+      - "🎯 全球直连"
+      - "DIRECT"
+
+  - name: "♻️ 自动选择"
+    type: url-test
+    url: "https://www.gstatic.com/generate_204"
+    interval: 600
+    tolerance: 50
+
+  - name: "🔰 国外流量"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "DIRECT"
+
+  - name: "🌍 流媒体"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🔰 国外流量"
+      - "DIRECT"
+
+  - name: "🍎 苹果服务"
+    type: select
+    proxies:
+      - "🎯 全球直连"
+      - "🚀 节点选择"
+      - "DIRECT"
+
+  - name: "Ⓜ️ 微软服务"
+    type: select
+    proxies:
+      - "🎯 全球直连"
+      - "🚀 节点选择"
+      - "DIRECT"
+
+  - name: "📲 电报信息"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🔰 国外流量"
+      - "DIRECT"
+
+  - name: "🎥 YouTube"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🔰 国外流量"
+      - "DIRECT"
+
+  - name: "🎬 奈飞视频"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🔰 国外流量"
+      - "DIRECT"
+
+  - name: "🪀 TikTok"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🔰 国外流量"
+      - "DIRECT"
+
+  - name: "🧸 Spotify"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🔰 国外流量"
+      - "DIRECT"
+
+  - name: "📺 Disney Plus"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🔰 国外流量"
+      - "DIRECT"
+
+  - name: "🎮 游戏平台"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🎯 全球直连"
+      - "DIRECT"
+
+  - name: "🎯 全球直连"
+    type: select
+    proxies:
+      - "DIRECT"
+      - "🚀 节点选择"
+
+  - name: "🛑 全球拦截"
+    type: select
+    proxies:
+      - "REJECT"
+
+  - name: "🐟 漏网之鱼"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🔰 国外流量"
+      - "🎯 全球直连"
+
+# 基于 blackmatrix7 Clash 规则的 rule-providers，定时从镜像更新，保证 Egern 与上游保持同步
+rule_providers:
+  AdvertisingLite:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdvertisingLite/AdvertisingLite.yaml
+    path: ./rules/AdvertisingLite.yaml
+    interval: 86400
+
+  Hijacking:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.yaml
+    path: ./rules/Hijacking.yaml
+    interval: 86400
+
+  Apple:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.yaml
+    path: ./rules/Apple.yaml
+    interval: 86400
+
+  Microsoft:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.yaml
+    path: ./rules/Microsoft.yaml
+    interval: 86400
+
+  Google:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.yaml
+    path: ./rules/Google.yaml
+    interval: 86400
+
+  Telegram:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.yaml
+    path: ./rules/Telegram.yaml
+    interval: 86400
+
+  YouTube:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/YouTube/YouTube.yaml
+    path: ./rules/YouTube.yaml
+    interval: 86400
+
+  Netflix:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Netflix/Netflix.yaml
+    path: ./rules/Netflix.yaml
+    interval: 86400
+
+  Disney:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Disney/Disney.yaml
+    path: ./rules/Disney.yaml
+    interval: 86400
+
+  TikTok:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TikTok/TikTok.yaml
+    path: ./rules/TikTok.yaml
+    interval: 86400
+
+  Spotify:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Spotify/Spotify.yaml
+    path: ./rules/Spotify.yaml
+    interval: 86400
+
+  Facebook:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Facebook/Facebook.yaml
+    path: ./rules/Facebook.yaml
+    interval: 86400
+
+  Twitter:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Twitter/Twitter.yaml
+    path: ./rules/Twitter.yaml
+    interval: 86400
+
+  Steam:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Steam/Steam.yaml
+    path: ./rules/Steam.yaml
+    interval: 86400
+
+  Speedtest:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Speedtest/Speedtest.yaml
+    path: ./rules/Speedtest.yaml
+    interval: 86400
+
+  GlobalMedia:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GlobalMedia/GlobalMedia.yaml
+    path: ./rules/GlobalMedia.yaml
+    interval: 86400
+
+  ChinaMedia:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMedia/ChinaMedia.yaml
+    path: ./rules/ChinaMedia.yaml
+    interval: 86400
+
+  China:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/China/China.yaml
+    path: ./rules/China.yaml
+    interval: 86400
+
+  Proxy:
+    type: http
+    behavior: classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.yaml
+    path: ./rules/Proxy.yaml
+    interval: 86400
+
+rules:
+  - RULE-SET,AdvertisingLite,🛑 全球拦截
+  - RULE-SET,Hijacking,🛑 全球拦截
+  - RULE-SET,Apple,🍎 苹果服务
+  - RULE-SET,Microsoft,Ⓜ️ 微软服务
+  - RULE-SET,Telegram,📲 电报信息
+  - RULE-SET,YouTube,🎥 YouTube
+  - RULE-SET,Netflix,🎬 奈飞视频
+  - RULE-SET,Disney,📺 Disney Plus
+  - RULE-SET,TikTok,🪀 TikTok
+  - RULE-SET,Spotify,🧸 Spotify
+  - RULE-SET,Facebook,🚀 节点选择
+  - RULE-SET,Twitter,🚀 节点选择
+  - RULE-SET,Steam,🎮 游戏平台
+  - RULE-SET,Speedtest,🚀 节点选择
+  - RULE-SET,GlobalMedia,🌍 流媒体
+  - RULE-SET,Google,🔰 国外流量
+  - RULE-SET,ChinaMedia,🎯 全球直连
+  - RULE-SET,China,🎯 全球直连
+  - RULE-SET,Proxy,🔰 国外流量
+  - GEOIP,CN,🎯 全球直连,no-resolve
+  - MATCH,🐟 漏网之鱼
+
+# 网络包含选项：开启后可覆盖蜂窝、APNs 与本地网络，保证所有流量均纳入策略管控
+include_all_networks: true
+include_apns: true
+include_cellular_services: true
+include_local_networks: true
+
+# 兼容路由：如遇到本地网络设备异常（如 HomeKit 录像），可改为 true
+compat_route: false
