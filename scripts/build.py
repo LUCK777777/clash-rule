@@ -4,8 +4,10 @@ import os, re, sys, subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TEMPLATE = ROOT / "templates" / "custom.ini"
-DIST = ROOT / "dist" / "custom.ini"
+TARGETS = [
+    (ROOT / "templates" / "custom.ini", ROOT / "dist" / "custom.ini"),
+    (ROOT / "templates" / "egern.yaml", ROOT / "dist" / "egern.yaml"),
+]
 SRC_FILE = ROOT / "sources.txt"
 DEFAULT_REPO = "LUCK777777/clash-rule"
 
@@ -55,16 +57,17 @@ def url_map():
     return m
 
 def main():
-    DIST.parent.mkdir(parents=True, exist_ok=True)
-    text = TEMPLATE.read_text(encoding="utf-8")
     mapping = url_map()
-    replaced = 0
-    for src, tgt in mapping.items():
-        if src in text:
-            text = text.replace(src, tgt)
-            replaced += 1
-    DIST.write_text(text, encoding="utf-8")
-    print(f"Build done. Replaced {replaced} occurrences. Output: {DIST}")
+    for template, dist in TARGETS:
+        dist.parent.mkdir(parents=True, exist_ok=True)
+        text = template.read_text(encoding="utf-8")
+        replaced = 0
+        for src, tgt in mapping.items():
+            if src in text:
+                text = text.replace(src, tgt)
+                replaced += 1
+        dist.write_text(text, encoding="utf-8")
+        print(f"Build done. Replaced {replaced} occurrences. Output: {dist}")
 
 if __name__ == "__main__":
     main()

@@ -210,133 +210,133 @@ rule_providers:
   AdvertisingLite:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdvertisingLite/AdvertisingLite.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/AdvertisingLite/AdvertisingLite.yaml
     path: ./rules/AdvertisingLite.yaml
     interval: 86400
 
   Hijacking:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Hijacking/Hijacking.yaml
     path: ./rules/Hijacking.yaml
     interval: 86400
 
   Apple:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Apple/Apple.yaml
     path: ./rules/Apple.yaml
     interval: 86400
 
   Microsoft:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Microsoft/Microsoft.yaml
     path: ./rules/Microsoft.yaml
     interval: 86400
 
   Google:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Google/Google.yaml
     path: ./rules/Google.yaml
     interval: 86400
 
   Telegram:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Telegram/Telegram.yaml
     path: ./rules/Telegram.yaml
     interval: 86400
 
   YouTube:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/YouTube/YouTube.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/YouTube/YouTube.yaml
     path: ./rules/YouTube.yaml
     interval: 86400
 
   Netflix:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Netflix/Netflix.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Netflix/Netflix.yaml
     path: ./rules/Netflix.yaml
     interval: 86400
 
   Disney:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Disney/Disney.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Disney/Disney.yaml
     path: ./rules/Disney.yaml
     interval: 86400
 
   TikTok:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TikTok/TikTok.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/TikTok/TikTok.yaml
     path: ./rules/TikTok.yaml
     interval: 86400
 
   Spotify:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Spotify/Spotify.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Spotify/Spotify.yaml
     path: ./rules/Spotify.yaml
     interval: 86400
 
   Facebook:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Facebook/Facebook.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Facebook/Facebook.yaml
     path: ./rules/Facebook.yaml
     interval: 86400
 
   Twitter:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Twitter/Twitter.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Twitter/Twitter.yaml
     path: ./rules/Twitter.yaml
     interval: 86400
 
   Steam:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Steam/Steam.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Steam/Steam.yaml
     path: ./rules/Steam.yaml
     interval: 86400
 
   Speedtest:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Speedtest/Speedtest.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Speedtest/Speedtest.yaml
     path: ./rules/Speedtest.yaml
     interval: 86400
 
   GlobalMedia:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GlobalMedia/GlobalMedia.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/GlobalMedia/GlobalMedia.yaml
     path: ./rules/GlobalMedia.yaml
     interval: 86400
 
   ChinaMedia:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMedia/ChinaMedia.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMedia/ChinaMedia.yaml
     path: ./rules/ChinaMedia.yaml
     interval: 86400
 
   China:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/China/China.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/China/China.yaml
     path: ./rules/China.yaml
     interval: 86400
 
   Proxy:
     type: http
     behavior: classical
-    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.yaml
+    url: https://raw.githubusercontent.com/LUCK777777/clash-rule/main/mirror/raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Proxy/Proxy.yaml
     path: ./rules/Proxy.yaml
     interval: 86400
 
@@ -362,55 +362,6 @@ rules:
   - RULE-SET,Proxy,🔰 国外流量
   - GEOIP,CN,🎯 全球直连,no-resolve
   - MATCH,🐟 漏网之鱼
-
-# DNS 防泄漏：劫持所有外部 DNS 请求并送入内核解析
-dns:
-  bootstrap:
-    - system
-    - https://1.1.1.1/dns-query
-  upstreams:
-    main:
-      - https://1.1.1.1/dns-query
-      - https://8.8.8.8/dns-query
-    security:
-      - quic://dns.adguard-dns.com
-  forward:
-    - wildcard:
-        match: '*.lan'
-        value: system
-    - wildcard:
-        match: '*.local'
-        value: system
-    - proxy_rule_set:
-        match: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list
-        value: system
-    - wildcard:
-        match: '*'
-        value: main
-  block_ips:
-    - 0.0.0.0/8
-    - 10.0.0.0/8
-    - 100.64.0.0/10
-    - 127.0.0.0/8
-    - 169.254.0.0/16
-    - 172.16.0.0/12
-    - 192.0.0.0/24
-    - 192.0.2.0/24
-    - 192.168.0.0/16
-    - 198.18.0.0/15
-    - 198.51.100.0/24
-    - 203.0.113.0/24
-    - 224.0.0.0/4
-    - 240.0.0.0/4
-  public_ip_lookup_url: https://ifconfig.me/ip
-
-# 将外部 DNS 请求劫持到内核，配合上方的 forward 与 block_ips 避免泄漏
-hijack_dns:
-  - '*'
-
-# 延迟测试：聚合节点池的快速健康检查（可根据需要调整 URL）
-proxy_latency_test_url: https://www.gstatic.com/generate_204
-direct_latency_test_url: https://www.baidu.com
 
 # 网络包含选项：开启后可覆盖蜂窝、APNs 与本地网络，保证所有流量均纳入策略管控
 include_all_networks: true

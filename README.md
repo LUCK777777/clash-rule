@@ -21,6 +21,15 @@
 - `cache-algorithm` + `cache-size` 提升多客户端/脚本场景下的解析性能。
 
 ## Egern 聚合订阅模板
+- 位置：`templates/egern.yaml`，自动产物：`dist/egern.yaml`（已替换为本仓库 mirror/ 前缀，便于无污染拉取）。
+- 作用：为 Egern 提供适配 CF-Workers-SUB 聚合订阅的 Profile 片段，内置 DNS 防泄漏、劫持 DNS、节点测速与黑白名单策略。
+- DNS：采用 Egern 官方示例的多上游/规则分流（含阿里/腾讯/字节跳动/Apple 等规则集），并统一劫持系统 DNS，避免泄漏。
+- 规则：接入 blackmatrix7 的 Clash 规则（广告拦截、劫持防护、Apple/Microsoft/Google/流媒体/中国区/Proxy 等），作为 `rule_providers` 自动更新；工作流会拉取上游到 mirror 并重写 dist，以保证上游规则更新后 Egern 规则同步。
+- 用法示例：
+  - 将 CF-Workers-SUB 输出的订阅链接追加参数：`?token=YOUR_TOKEN&target=egern&config=https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/templates/egern.yaml`
+  - 或直接使用镜像后的成品：`?token=YOUR_TOKEN&target=egern&config=https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/dist/egern.yaml`
+  - 在 Egern 的 Profile.yaml 中，将 `auto_update.url` 指向你的聚合订阅地址即可自动刷新节点与规则。
+  - 可按需调整 `auto_update.interval`、`proxy_latency_test_url` 以及各个策略组的默认候选。
 - 位置：`templates/egern.yaml`
 - 作用：为 Egern 提供适配 CF-Workers-SUB 聚合订阅的 Profile 片段，内置 DNS 防泄漏、劫持 DNS 及自动更新示例。
 - DNS：采用 Egern 官方示例的多上游/规则分流（含阿里/腾讯/字节跳动/Apple 等规则集），并统一劫持系统 DNS，避免泄漏。

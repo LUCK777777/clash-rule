@@ -31,6 +31,7 @@ jobs:
         run: |
           python scripts/fetch.py
 
+      - name: Regenerate dist artifacts
       - name: Regenerate dist/custom.ini
         run: |
           python scripts/build.py
@@ -56,6 +57,9 @@ jobs:
             echo "Upstream changes caused conflicts; please rerun after resolving."
             exit 0
           fi
+          git add mirror dist MIRROR_UPDATED sources.txt templates/custom.ini templates/egern.yaml
+          git commit -m "chore: refresh rules"
+          git push origin "HEAD:$BRANCH"
           git add mirror dist MIRROR_UPDATED sources.txt templates/custom.ini
           git commit -m "chore: refresh rules"
           git push origin "HEAD:$BRANCH"
