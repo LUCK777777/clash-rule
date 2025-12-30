@@ -1,0 +1,54 @@
+# 通用 DNS 防泄漏配置（兼容 Clash.Meta / Stash / Clash Verge / OpenClash）
+# - 关闭操作系统 DNS 直连，所有代理流量的域名解析走 DoH 并可按规则分流
+# - 对被代理的域名启用 fake-ip，提升命中率并避免明文 DNS 外泄
+# - hijack 本机 53 端口，确保 App 的查询优先进入内核
+
+dns:
+  enable: true
+  ipv6: false
+  listen: 0.0.0.0:1053
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  respect-rule-order: true
+  use-hosts: true
+  cache-algorithm: lrucache
+  cache-size: 4096
+
+  # 直连可用的基础解析，用于探测/回落；建议使用可信公共 DNS
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+
+  # 按规则直连的 DoH（中国区常用）
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+
+  # 代理域名的解析强制走代理通道，避免运营商劫持或泄漏
+  proxy-server-nameserver:
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
+
+  # 非中国域名或 IP 将进入代理解析，增强抗污染能力
+  fallback:
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+      - 0.0.0.0/32
+    domain:
+      - +.google.com
+      - +.facebook.com
+      - +.twitter.com
+      - +.youtube.com
+
+# Hijack 系统 DNS，避免应用绕过代理直连 ISP DNS（Stash/Clash Verge/OpenClash 均支持）
+tun:
+  enable: true
+  stack: system
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53

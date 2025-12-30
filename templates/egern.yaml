@@ -1,0 +1,74 @@
+---
+# Egern 聚合订阅模板（可与 CF-Workers-SUB / subconverter 一起使用）。
+# 用法示例：在聚合出的订阅后附加 target=egern 并追加 config 指向本文件：
+#   https://sub.example.com/auto?token=YOUR_TOKEN&target=egern&config=https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/templates/egern.yaml
+# 若直接导入到 Egern，可在 Profile.yaml 中将 auto_update.url 替换为你的聚合订阅地址。
+
+# 自动更新配置：把 url 改成你在 CF-Workers-SUB 输出的聚合订阅地址，确保客户端自动拉取最新节点。
+auto_update:
+  url: https://sub.example.com/auto?token=YOUR_TOKEN&target=egern
+  interval: 86400
+
+# 通用开关
+ipv6: false
+allow_external_connections: false
+vif_only: false
+hide_vpn_icon: false
+
+# DNS 防泄漏：劫持所有外部 DNS 请求并送入内核解析
+dns:
+  bootstrap:
+    - system
+    - https://1.1.1.1/dns-query
+  upstreams:
+    main:
+      - https://1.1.1.1/dns-query
+      - https://8.8.8.8/dns-query
+    security:
+      - quic://dns.adguard-dns.com
+  forward:
+    - wildcard:
+        match: '*.lan'
+        value: system
+    - wildcard:
+        match: '*.local'
+        value: system
+    - proxy_rule_set:
+        match: https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ChinaDomain.list
+        value: system
+    - wildcard:
+        match: '*'
+        value: main
+  block_ips:
+    - 0.0.0.0/8
+    - 10.0.0.0/8
+    - 100.64.0.0/10
+    - 127.0.0.0/8
+    - 169.254.0.0/16
+    - 172.16.0.0/12
+    - 192.0.0.0/24
+    - 192.0.2.0/24
+    - 192.168.0.0/16
+    - 198.18.0.0/15
+    - 198.51.100.0/24
+    - 203.0.113.0/24
+    - 224.0.0.0/4
+    - 240.0.0.0/4
+  public_ip_lookup_url: https://ifconfig.me/ip
+
+# 将外部 DNS 请求劫持到内核，配合上方的 forward 与 block_ips 避免泄漏
+hijack_dns:
+  - '*'
+
+# 延迟测试：聚合节点池的快速健康检查（可根据需要调整 URL）
+proxy_latency_test_url: https://www.gstatic.com/generate_204
+direct_latency_test_url: https://www.baidu.com
+
+# 网络包含选项：开启后可覆盖蜂窝、APNs 与本地网络，保证所有流量均纳入策略管控
+include_all_networks: true
+include_apns: true
+include_cellular_services: true
+include_local_networks: true
+
+# 兼容路由：如遇到本地网络设备异常（如 HomeKit 录像），可改为 true
+compat_route: false
