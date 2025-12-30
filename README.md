@@ -23,7 +23,7 @@
 ## 规则自动更新 / 镜像工作流
 - 位置：`.github/workflows/update.yml`
 - 作用：每天 02:00 UTC 定时（或手动 dispatch）拉取 `sources.txt` 中的所有上游规则到 `mirror/`，同时用最新镜像 URL 生成 `dist/custom.ini`。
-- 推送：如有变更，自动提交 `mirror/ dist/ MIRROR_UPDATED` 等文件并推送到当前仓库；推送前会先自动 rebase 以消除与主分支的提交冲突。
+- 推送：如有变更，自动提交 `mirror/ dist/ MIRROR_UPDATED` 等文件并推送到当前仓库；推送前会先自动 rebase 以消除与主分支的提交冲突（分支名优先使用仓库默认分支，若未设置 ref 会回退到远端 HEAD 或 `main`）。
 
 ### 使用/定制
 1. 打开 GitHub Actions，允许计划任务运行。
