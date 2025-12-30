@@ -6,7 +6,7 @@
 
 # 自动更新配置：把 url 改成你在 CF-Workers-SUB 输出的聚合订阅地址，确保客户端自动拉取最新节点。
 auto_update:
-  url: https://ch.liy343012.workers.dev/key?sub
+  url:https://ch.liy343012.workers.dev/key?sub
   interval: 86400
 
 # 通用开关
