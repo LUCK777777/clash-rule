@@ -1,671 +1,363 @@
-# ========== 基础 ==========
 ipv6: true
+http_port: 3080
+socks_port: 3090
+allow_external_connections: true
 vif_only: true
 hide_vpn_icon: true
 
-# 让 Egern 接管常见 DNS 端口请求（可选，但建议开）
+# DNS server addresses to hijack.
 hijack_dns:
   - "*:53"
 
-# 延迟测试 URL（给 auto_test 用）
-proxy_latency_test_url: "http://www.gstatic.com/generate_204"
+# GeoIP database URL
+geoip_db_url: https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb
 
-# ========== DNS（DNS 分流） ==========
+# ASN database URL
+asn_db_url: https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-ASN.mmdb
+
+# Direct connection latency test URL
+direct_latency_test_url: https://captive.apple.com
+
+# Proxy latency test URL
+proxy_latency_test_url: https://www.google.com/generate_204
+
 dns:
   bootstrap:
     - 223.5.5.5
     - 119.29.29.29
-
+    - 2400:3200::1
   upstreams:
-    国外:
-      - "tls://1.1.1.1"
-      - "https://8.8.8.8/dns-query"
-      - "https://1.1.1.1/dns-query"
-      - "tls://dns.google"
-    国内:
-      - "tls://dns.alidns.com"
-      - "tls://dot.pub"
-      - "https://doh.pub/dns-query"
-      - "https://dns.alidns.com/dns-query"
-    腾讯:
-      - "tls://dot.pub"
-      - "https://doh.pub/dns-query"
-    阿里巴巴:
-      - "tls://dns.alidns.com"
-      - "https://dns.alidns.com/dns-query"
-    字节跳动:
-      - "180.184.2.2"
-      - "180.184.1.1"
+    Global:
+      - quic://dns.adguard-dns.com
+      - tls://1.1.1.1
+      - https://8.8.8.8/dns-query
+      - https://1.1.1.1/dns-query
+    China:
+      - tls://dns.alidns.com
+      - tls://dot.pub
+      - https://doh.pub/dns-query
+      - https://dns.alidns.com/dns-query
+    Tencent:
+      - tls://dot.pub
+      - https://doh.pub/dns-query
+    Alibaba:
+      - tls://dns.alidns.com
+      - https://dns.alidns.com/dns-query
+    Bytedance:
+      - 180.184.2.2
+      - 180.184.1.1
+    AdGuard:
+      - quic://dns.adguard-dns.com
+      - tls://dns.adguard-dns.com
+      - https://dns.adguard-dns.com/dns-query
 
   forward:
+    - regex:
+        match: ^ad(s?)\.
+        value: AdGuard
     - proxy_rule_set:
-        match: "https://rule.kelee.one/Loon/DouYin.lsr"
-        value: "字节跳动"
+        match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Douyin.lsr
+        value: Bytedance
     - proxy_rule_set:
-        match: "https://rule.kelee.one/Loon/TestFlight.lsr"
-        value: "国外"
+        match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Apple.lsr
+        value: China
     - proxy_rule_set:
-        match: "https://rule.kelee.one/Loon/Apple.lsr"
-        value: "国内"
+        match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Alibaba.lsr
+        value: Alibaba
     - proxy_rule_set:
-        match: "https://rule.kelee.one/Loon/Alibaba.lsr"
-        value: "阿里巴巴"
+        match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Tencent.lsr
+        value: Tencent
+    # 注意：使用 rule_set 分流 DNS 会增加内存开销，如遇卡顿可尝试注释下方 block
     - proxy_rule_set:
-        match: "https://rule.kelee.one/Loon/Tencent.lsr"
-        value: "腾讯"
-    - proxy_rule_set:
-        match: "https://rule.kelee.one/Loon/ChinaMax.lsr"
-        value: "国内"
-    - proxy_rule_set:
-        match: "https://rule.kelee.one/Loon/Global.lsr"
-        value: "国外"
-    # 额外加一条：.cn 默认走国内 DNS
-    - wildcard:
-        match: "*.cn"
-        value: "国内"
+        match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/ChinaMax/ChinaMax_All.list
+        value: China
     - wildcard:
         match: "*"
-        value: "国外"
+        value: Global
 
-  public_ip_lookup_url: "https://ifconfig.me/ip"
+  public_ip_lookup_url: https://ifconfig.me/ip
 
-# ========== 策略组（按 Clash 分组） ==========
 policy_groups:
-  # ---- 节点来源（外部订阅）----
   - external:
-      name: "☑️ 手动切换"
+      name: 全部节点
       type: select
       urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: ".*"
-      update_interval: 86400
-
-  - external:
-      name: "自建节点"
-      type: select
-      urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: "(自建|DIY|VPS|MyNode|Self|NAT)"
-      update_interval: 86400
-
-  # ---- 地区自动测速 ----
-  - external:
-      name: "香港节点"
-      type: auto_test
-      urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: "(港|HK|hk|Hong Kong|HongKong|hongkong|HKG)"
-      interval: 86400
-      tolerance: 100
-      timeout: 5
-      update_interval: 86400
-
-  - external:
-      name: "日本节点"
-      type: auto_test
-      urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: "(日本|川日|东京|大阪|泉日|埼玉|沪日|深日|[^-]日|JP|Japan|Tokyo|NRT|KIX)"
-      interval: 86400
-      tolerance: 100
-      timeout: 5
-      update_interval: 86400
-
-  - external:
-      name: "美国节点"
-      type: auto_test
-      urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: "(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|US|United States|ATL|BUF|DFW|EWR|IAD|LAX|MCI|MIA|ORD|PHX|PDX|SEA|SJC)"
-      interval: 86400
-      tolerance: 150
-      timeout: 5
-      update_interval: 86400
-
-  - external:
-      name: "台湾节点"
-      type: auto_test
-      urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: "(台|新北|彰化|TW|Taiwan|TPE|KHH)"
-      interval: 86400
-      tolerance: 100
-      timeout: 5
-      update_interval: 86400
-
-  - external:
-      name: "狮城节点"
-      type: auto_test
-      urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: "(新加坡|坡|狮城|SG|Singapore|SIN)"
-      interval: 86400
-      tolerance: 100
-      timeout: 5
-      update_interval: 86400
-
-  - external:
-      name: "韩国节点"
-      type: auto_test
-      urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: "(KR|Korea|KOR|Seoul|首尔|春川|韩|韓|ICN)"
-      interval: 86400
-      tolerance: 100
-      timeout: 5
-      update_interval: 86400
-
-  # ---- 节点名筛选池 ----
-  - external:
-      name: "奈飞节点池"
-      type: select
-      urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: "(NF|奈飞|Netflix|NETFLIX|Media|MITM)"
-      update_interval: 86400
-
-  - external:
-      name: "媒体节点池"
-      type: select
-      urls:
-        - "https://ch.liy343012.workers.dev/key?sub"
-      filter: "(MITM|emby|Emby)"
-      update_interval: 86400
-
-  # ---- 入口组：节点选择 ----
-  - select:
-      name: "节点选择"
-      policies:
-        - "自建节点"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
-
-  # ---- 业务组 ----
-  - select:
-      name: "电报消息"
-      policies:
-        - "自建节点"
-        - "节点选择"
-        - "狮城节点"
-        - "香港节点"
-        - "台湾节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - https://sub.store/download/collection/AllServer?target=Egern
+      icon: ""
+      hidden: false
 
   - select:
-      name: "OpenAi"
+      name: Proxy
       policies:
-        - "自建节点"
-        - "节点选择"
-        - "狮城节点"
-        - "香港节点"
-        - "台湾节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - 全部节点
+        - DIRECT
 
   - select:
-      name: "油管视频"
+      name: Global
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Global.png
       policies:
-        - "自建节点"
-        - "节点选择"
-        - "狮城节点"
-        - "香港节点"
-        - "台湾节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "奈飞视频"
+      name: OpenAI
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/OpenAI.png
       policies:
-        - "奈飞节点池"
-        - "自建节点"
-        - "节点选择"
-        - "狮城节点"
-        - "香港节点"
-        - "台湾节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "哔哩哔哩"
+      name: TikTok
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/TikTok.png
       policies:
-        - "全球直连"
-        - "台湾节点"
-        - "香港节点"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "国外媒体"
+      name: Telegram
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Telegram.png
       policies:
-        - "媒体节点池"
-        - "自建节点"
-        - "节点选择"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "国内媒体"
+      name: YouTube
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/YouTube.png
       policies:
-        - "DIRECT"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "☑️ 手动切换"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "️ X"
+      name: Netflix
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Netflix.png
       policies:
-        - "自建节点"
-        - "节点选择"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "TikTok"
+      name: Disney
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Disney.png
       policies:
-        - "自建节点"
-        - "节点选择"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "Spotify"
+      name: HBO
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/HBO.png
       policies:
-        - "自建节点"
-        - "节点选择"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "Disney+"
+      name: AppleProxy
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Apple.png
       policies:
-        - "自建节点"
-        - "节点选择"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "Facebook"
+      name: GitHub
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/GitHub.png
       policies:
-        - "自建节点"
-        - "节点选择"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
   - select:
-      name: "Ⓜ️ 微软Bing"
+      name: Speedtest
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Speedtest.png
       policies:
-        - "DIRECT"
-        - "自建节点"
-        - "节点选择"
-        - "美国节点"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
+        - Proxy
+        - 香港节点
+        - 台湾节点
+        - 日本节点
+        - 新加坡节点
+        - 美国节点
+        - DIRECT
 
-  - select:
-      name: "Ⓜ️ 微软云盘"
+  - auto_test:
+      name: 香港节点
       policies:
-        - "DIRECT"
-        - "自建节点"
-        - "节点选择"
-        - "美国节点"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
+        - 全部节点
+      flatten: true
+      filter: |香港|HK|Hong
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Hong_Kong.png
 
-  - select:
-      name: "Ⓜ️ 微软服务"
+  - auto_test:
+      name: 台湾节点
       policies:
-        - "DIRECT"
-        - "自建节点"
-        - "节点选择"
-        - "美国节点"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
+        - 全部节点
+      flatten: true
+      filter: |台湾|TW|Tai
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Taiwan.png
 
-  - select:
-      name: "苹果服务"
+  - auto_test:
+      name: 日本节点
       policies:
-        - "DIRECT"
-        - "自建节点"
-        - "节点选择"
-        - "美国节点"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
+        - 全部节点
+      flatten: true
+      filter: |日本|JP|Japan
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Japan.png
 
-  - select:
-      name: "谷歌服务"
+  - auto_test:
+      name: 新加坡节点
       policies:
-        - "节点选择"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - 全部节点
+      flatten: true
+      filter: |新加坡|SG|Sing
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Singapore.png
 
-  - select:
-      name: "交易所"
+  - auto_test:
+      name: 美国节点
       policies:
-        - "自建节点"
-        - "节点选择"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-        - "DIRECT"
+        - 全部节点
+      flatten: true
+      filter: |美国|US|United
+      icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/United_States.png
 
-  - select:
-      name: "TRDR"
-      policies:
-        - "☑️ 手动切换"
-        - "DIRECT"
-
-  - select:
-      name: "全球直连"
-      policies:
-        - "DIRECT"
-        - "自建节点"
-        - "节点选择"
-
-  - select:
-      name: "漏网之鱼"
-      policies:
-        - "自建节点"
-        - "节点选择"
-        - "DIRECT"
-        - "香港节点"
-        - "台湾节点"
-        - "狮城节点"
-        - "日本节点"
-        - "美国节点"
-        - "韩国节点"
-        - "☑️ 手动切换"
-
-# ========== 规则 ==========
 rules:
-  # —— 银行/支付（置顶直连）——
+  # 1. 广告拦截
   - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/AliPay/AliPay.list"
-      policy: "全球直连"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/WeChat/WeChat.list"
-      policy: "全球直连"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/QuantumultX/UnionPay/UnionPay.list"
-      policy: "全球直连"
-      update_interval: 86400
-  - domain_suffix: { match: "cmbchina.com", policy: "全球直连" }
-  - domain_suffix: { match: "cmbchina.com.cn", policy: "全球直连" }
-  - domain_suffix: { match: "icbc.com.cn", policy: "全球直连" }
-  - domain_suffix: { match: "ccb.com", policy: "全球直连" }
-  - domain_suffix: { match: "boc.cn", policy: "全球直连" }
-  - domain_suffix: { match: "abchina.com", policy: "全球直连" }
-  - domain_suffix: { match: "abchina.com.cn", policy: "全球直连" }
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Reject.yaml
+      policy: REJECT
+  - domain_regex:
+      match: ^ad\..*|^ads\..*|^advert\..*
+      policy: REJECT
 
-  # —— 基础直连/白名单 ——
+  # 2. 局域网直连
   - rule_set:
-      match: "https://raw.githubusercontent.com/cmliu/ACL4SSR/refs/heads/main/Clash/CFnat.list"
-      policy: "全球直连"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Lan/Lan.list"
-      policy: "全球直连"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Direct/Direct.list"
-      policy: "全球直连"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/UnBan.list"
-      policy: "全球直连"
-      update_interval: 86400
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Lan.yaml
+      policy: DIRECT
 
-  # —— 广告/净化（REJECT）——
+  # 3. 国内流量直连
   - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanAD.list"
-      policy: "REJECT"
+      match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/ChinaMax/ChinaMax_All.list
+      policy: DIRECT
       update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/BanProgramAD.list"
-      policy: "REJECT"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/adobe.list"
-      policy: "REJECT"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/IDM.list"
-      policy: "REJECT"
-      update_interval: 86400
-
-  # —— 中国区特例直连 ——
-  - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/GoogleCN.list"
-      policy: "全球直连"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/SteamCN/SteamCN.list"
-      policy: "全球直连"
-      update_interval: 86400
-
-  # —— 系统服务 ——
-  - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Bing.list"
-      policy: "Ⓜ️ 微软Bing"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/OneDrive/OneDrive.list"
-      policy: "Ⓜ️ 微软云盘"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Microsoft/Microsoft.list"
-      policy: "Ⓜ️ 微软服务"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Apple/Apple.list"
-      policy: "苹果服务"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Telegram/Telegram.list"
-      policy: "电报消息"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Google/Google.list"
-      policy: "谷歌服务"
-      update_interval: 86400
-
-  # —— 交易所 / AI ——
-  - rule_set:
-      match: "https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/rule/AI.list"
-      policy: "OpenAi"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/rule/binance.list"
-      policy: "交易所"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/OpenAi.list"
-      policy: "OpenAi"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Claude.list"
-      policy: "OpenAi"
-      update_interval: 86400
-
-  # —— 媒体 / 社交 ——
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Twitter/Twitter.list"
-      policy: "️ X"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/TikTok/TikTok.list"
-      policy: "TikTok"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Spotify/Spotify.list"
-      policy: "Spotify"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Disney/Disney.list"
-      policy: "Disney+"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Facebook/Facebook.list"
-      policy: "Facebook"
-      update_interval: 86400
-
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/YouTube/YouTube.list"
-      policy: "油管视频"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Netflix/Netflix.list"
-      policy: "奈飞视频"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/GlobalMedia/GlobalMedia.list"
-      policy: "国外媒体"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Emby/Emby.list"
-      policy: "国外媒体"
-      update_interval: 86400
-
-  - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/BilibiliHMT.list"
-      policy: "哔哩哔哩"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/Ruleset/Bilibili.list"
-      policy: "哔哩哔哩"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/ChinaMedia/ChinaMedia.list"
-      policy: "国内媒体"
-      update_interval: 86400
-
-  # —— GFW/代理/直连集合 ——
-  - rule_set:
-      match: "https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/ProxyGFWlist.list"
-      policy: "节点选择"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/UlinoyaPed/ShellClash/dev/lists/proxy.list"
-      policy: "节点选择"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/CMBlog.list"
-      policy: "节点选择"
-      update_interval: 86400
-  - rule_set:
-      match: "https://raw.githubusercontent.com/UlinoyaPed/ShellClash/dev/lists/direct.list"
-      policy: "全球直连"
-      update_interval: 86400
-
-  # —— 下载直连 ——
-  - rule_set:
-      match: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Download/Download.list"
-      policy: "全球直连"
-      update_interval: 86400
-
-  # —— 内网直连（稳）——
-  - ip_cidr: { match: "127.0.0.0/8", policy: "全球直连" }
-  - ip_cidr: { match: "10.0.0.0/8", policy: "全球直连" }
-  - ip_cidr: { match: "172.16.0.0/12", policy: "全球直连" }
-  - ip_cidr: { match: "192.168.0.0/16", policy: "全球直连" }
-  - ip_cidr: { match: "169.254.0.0/16", policy: "全球直连" }
-  - ip_cidr: { match: "100.64.0.0/10", policy: "全球直连" }
-  - ip_cidr6: { match: "fc00::/7", policy: "全球直连" }
-  - ip_cidr6: { match: "fe80::/10", policy: "全球直连" }
-
-  # —— CN 直连 ——
+  - domain_suffix:
+      match: 'cn'
+      policy: DIRECT
   - geoip:
-      match: "CN"
-      policy: "全球直连"
+      match: CN
+      policy: DIRECT
 
-  # —— TRDR ——
+  # 4. 分流
   - rule_set:
-      match: "https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/rule/trdr.list"
-      policy: "TRDR"
-      update_interval: 86400
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/OpenAI.yaml
+      policy: OpenAI
+  - rule_set:
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/TikTok.yaml
+      policy: TikTok
+  - rule_set:
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Telegram.yaml
+      policy: Telegram
+  - rule_set:
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/YouTube.yaml
+      policy: YouTube
+  - rule_set:
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Netflix.yaml
+      policy: Netflix
+  - rule_set:
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Disney.yaml
+      policy: Disney
+  - rule_set:
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/HBO.yaml
+      policy: HBO
+  - rule_set:
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/AppleProxy.yaml
+      policy: AppleProxy
+  - rule_set:
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Github.yaml
+      policy: GitHub
+  - rule_set:
+      match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Speedtest.yaml
+      policy: Speedtest
 
-  # —— FINAL：漏网之鱼 ——
+  # 5. 兜底
   - default:
-      policy: "漏网之鱼"
+      policy: Global
+
+mitm:
+  enabled: true
+  ca_p12: Legern.p12
+  ca_passphrase: 241936
+  hostnames:
+    - example.com
+
+  hostnames:
+    - '*.google.com'
+    - '*.youtube.com'
+
+modules:
+  - name: Panel
+    url: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Module/Panel.yaml
+    enabled: true
+    update_interval: 3600
+  - name: Sub-Store
+    url: https://raw.githubusercontent.com/sub-store-org/Sub-Store/master/config/Egern.yaml
+    enabled: true
+  - name: WeatherKit
+    url: https://github.com/NSRingo/WeatherKit/releases/latest/download/iRingo.WeatherKit.sgmodule
+    enabled: true
+  - name: 'YouTube Enhance'
+    url: https://raw.githubusercontent.com/Maasea/sgmodule/master/YouTube.Enhance.sgmodule
+    enabled: true
+    update_interval: 86400
+  - name: 奶思广告拦截&净化合集
+    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Surge/module/blockAds.module
+    enabled: false
+    update_interval: 86400
