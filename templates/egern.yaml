@@ -412,24 +412,11 @@ modules:
     url: https://github.com/NSRingo/WeatherKit/releases/latest/download/iRingo.WeatherKit.sgmodule
     enabled: true
 
-  - name: "Spotify"
-    url: https://raw.githubusercontent.com/app2smile/rules/master/module/spotify.module
-    enabled: true
-
   - name: "YouTube Enhance"
     url: https://raw.githubusercontent.com/Maasea/sgmodule/master/YouTube.Enhance.sgmodule
-    enabled: true
-
-  - name: "BiliBili去广告"
-    url: https://raw.githubusercontent.com/app2smile/rules/master/module/bilibili.sgmodule
     enabled: true
 
   - name: 墨鱼去广告融合版
     url: https://raw.githubusercontent.com/ddgksf2013/Modules/main/Adblock.sgmodule
     enabled: true
-    interval: 86400
-
-  - name: 奶思广告拦截&净化合集
-    url: https://github.com/fmz200/wool_scripts/blob/main/Surge/module/blockAds.module
-    enabled: false
     interval: 86400
