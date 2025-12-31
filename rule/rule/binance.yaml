@@ -1,7 +1,3 @@
-# 内容：交易所 / 加密货币
-# 来源：用户自定义 JSON 转换
-# 数量：DOMAIN-KEYWORD 共 63 条，DOMAIN-SUFFIX 共 228 条
-
 # ----- DOMAIN-KEYWORD -----
 DOMAIN-KEYWORD,arweave
 DOMAIN-KEYWORD,binance
@@ -278,10 +274,3 @@ DOMAIN-SUFFIX,walrus.xyz
 DOMAIN-SUFFIX,watchtheburn.com
 DOMAIN-SUFFIX,wbtc.network
 DOMAIN-SUFFIX,wynd.network
-DOMAIN-SUFFIX,zapper.fi
-DOMAIN-SUFFIX,zb.app
-DOMAIN-SUFFIX,zb.com
-DOMAIN-SUFFIX,zb.io
-DOMAIN-SUFFIX,zb.live
-DOMAIN-SUFFIX,zkscan.io
-DOMAIN-SUFFIX,zksync.io
