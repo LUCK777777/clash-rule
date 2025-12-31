@@ -33,7 +33,6 @@ dns:
   bootstrap:
     - 223.5.5.5
     - 119.29.29.29
-
   upstreams:
     国外:
       - tls://1.1.1.1
@@ -54,7 +53,6 @@ dns:
     字节跳动:
       - 180.184.2.2
       - 180.184.1.1
-
   forward:
     - proxy_rule_set:
         match: https://rule.kelee.one/Loon/DouYin.lsr
@@ -88,7 +86,6 @@ dns:
         match: "*"
         value: 国外
         disabled: false
-
   public_ip_lookup_url: https://ifconfig.me/ip
 
 # --- 策略组配置 ---
@@ -100,24 +97,24 @@ policy_groups:
       urls:
         - https://ch.liy343012.workers.dev/key?sub
         - https://sub.store/download/collection/AllServer?target=Egern
-      icon: ""
+      icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-yu-96.png
 
-  # 自建节点（按你给的关键词匹配：自建|DIY|VPS|MyNode|Self|NAT）
+  # 自建节点（按关键词匹配：自建|DIY|VPS|MyNode|Self|NAT）
   - select:
       name: 自建节点
       policies:
         - 全部节点
       flatten: true
       filter: "(?i)(自建|DIY|VPS|MyNode|Self|NAT)"
-      icon: ""
+      icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-cloudflare-96.png
 
-  # 自动测速分组
+  # 自动测速分组（修正 filter：去掉开头 |，避免全匹配）
   - auto_test:
       name: 香港节点
       policies:
         - 全部节点
       flatten: true
-      filter: "|香港|HK|Hong"
+      filter: "(?i)(🇭🇰|香港|\\bHK\\b|\\bHKG\\b|Hong\\s*Kong|HongKong)"
       icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/HongKong.png
 
   - auto_test:
@@ -125,7 +122,7 @@ policy_groups:
       policies:
         - 全部节点
       flatten: true
-      filter: "|美国|US|States|American"
+      filter: "(?i)(🇺🇸|美国|美國|\\bUS\\b|\\bUSA\\b|United\\s*States)"
       icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/UnitedStates.png
 
   - auto_test:
@@ -133,7 +130,7 @@ policy_groups:
       policies:
         - 全部节点
       flatten: true
-      filter: "|台湾|TW|Tai"
+      filter: "(?i)(🇹🇼|台湾|台灣|\\bTW\\b|Taiwan)"
       icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Taiwan.png
 
   - auto_test:
@@ -141,7 +138,7 @@ policy_groups:
       policies:
         - 全部节点
       flatten: true
-      filter: "|日本|JP|Japan"
+      filter: "(?i)(🇯🇵|日本|\\bJP\\b|\\bJPN\\b|Japan)"
       icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Japan.png
 
   - auto_test:
@@ -149,27 +146,21 @@ policy_groups:
       policies:
         - 全部节点
       flatten: true
-      filter: "|新加坡|狮城|SG|Singapore"
+      filter: "(?i)(🇸🇬|新加坡|狮城|獅城|\\bSG\\b|Singapore)"
       icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Singapore.png
 
-  - auto_test:
-      name: 韩国节点
-      policies:
-        - 全部节点
-      flatten: true
-      filter: "|韩国|KR|KOR|Korea"
-      icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Korea.png
+  # ✅ 已删除：韩国节点（让韩国掉入其他节点）
 
-  # 剩余节点
+  # 剩余节点（已移除“韩国/KR/KOR/Korea”的排除条件，让韩国节点落入此组）
   - select:
       name: 其他节点
       policies:
         - 全部节点
       flatten: true
-      filter: "^((?!自建|DIY|VPS|MyNode|Self|NAT|香港|HK|Hong|台湾|TW|Tai|日本|JP|Japan|新加坡|狮城|SG|Singapore|韩国|KR|KOR|Korea|美国|US|States|American).)*$"
+      filter: "^((?!(自建|DIY|VPS|MyNode|Self|NAT|🇭🇰|香港|\\bHK\\b|\\bHKG\\b|Hong\\s*Kong|HongKong|🇺🇸|美国|美國|\\bUS\\b|\\bUSA\\b|United\\s*States|🇹🇼|台湾|台灣|\\bTW\\b|Taiwan|🇯🇵|日本|\\bJP\\b|\\bJPN\\b|Japan|🇸🇬|新加坡|狮城|獅城|\\bSG\\b|Singapore)).)*$"
       icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WorldMap.png
 
-  # 主手动切换策略（把自建节点放前面）
+  # 主手动切换策略（移除 韩国节点）
   - select:
       name: 自选策略
       policies:
@@ -179,10 +170,9 @@ policy_groups:
         - 狮城节点
         - 台湾节点
         - 日本节点
-        - 韩国节点
         - 其他节点
         - DIRECT
-      icon: ""
+      icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-zy-100.png
 
   # 应用策略组（按你要求删掉 HBO / YouTubeMusic）
   - select:
@@ -292,10 +282,11 @@ policy_groups:
       flatten: true
       icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-btc-94.png
 
+  # ✅ TRDR：不再走国家分组，直接列出“全部节点”里的所有节点
   - select:
       name: TRDR
       policies:
-        - 自选策略
+        - 全部节点
         - DIRECT
       flatten: true
       icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-usdt144.png
