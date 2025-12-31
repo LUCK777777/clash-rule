@@ -415,8 +415,3 @@ modules:
   - name: "YouTube Enhance"
     url: https://raw.githubusercontent.com/Maasea/sgmodule/master/YouTube.Enhance.sgmodule
     enabled: true
-
-  - name: 墨鱼去广告融合版
-    url: https://raw.githubusercontent.com/ddgksf2013/Modules/main/Adblock.sgmodule
-    enabled: true
-    interval: 86400
