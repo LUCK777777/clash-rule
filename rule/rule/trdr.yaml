@@ -1,1 +1,2 @@
-DOMAIN-SUFFIX,trdr.io
+domain_suffix_set:
+  - trdr.io
