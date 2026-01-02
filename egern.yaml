@@ -1,0 +1,376 @@
+ipv6: true
+http_port: 3080
+socks_port: 3090
+allow_external_connections: true
+vif_only: true
+hide_vpn_icon: true
+hijack_dns:
+- '*:53'
+geoip_db_url: https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb
+asn_db_url: https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-ASN.mmdb
+proxy_latency_test_url: https://www.google.com/generate_204
+direct_latency_test_url: http://www.apple.com/library/test/success.html
+compat_route: false
+include_all_networks: false
+include_apns: false
+include_cellular_services: false
+include_local_networks: false
+dns:
+  bootstrap:
+  - 223.5.5.5
+  - 119.29.29.29
+  upstreams:
+    国外:
+    - tls://1.1.1.1
+    - https://8.8.8.8/dns-query
+    - https://1.1.1.1/dns-query
+    - tls://dns.google
+    国内:
+    - tls://dns.alidns.com
+    - tls://dot.pub
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+    腾讯:
+    - tls://dot.pub
+    - https://doh.pub/dns-query
+    阿里巴巴:
+    - tls://dns.alidns.com
+    - https://dns.alidns.com/dns-query
+    字节跳动:
+    - 180.184.2.2
+    - 180.184.1.1
+  forward:
+  - proxy_rule_set:
+      match: https://rule.kelee.one/Loon/DouYin.lsr
+      value: 字节跳动
+      disabled: false
+  - proxy_rule_set:
+      match: https://rule.kelee.one/Loon/TestFlight.lsr
+      value: 国外
+      disabled: false
+  - proxy_rule_set:
+      match: https://rule.kelee.one/Loon/Apple.lsr
+      value: 国内
+      disabled: false
+  - proxy_rule_set:
+      match: https://rule.kelee.one/Loon/Alibaba.lsr
+      value: 阿里巴巴
+      disabled: false
+  - proxy_rule_set:
+      match: https://rule.kelee.one/Loon/Tencent.lsr
+      value: 腾讯
+      disabled: false
+  - proxy_rule_set:
+      match: https://rule.kelee.one/Loon/ChinaMax.lsr
+      value: 国内
+      disabled: false
+  - proxy_rule_set:
+      match: https://rule.kelee.one/Loon/Global.lsr
+      value: 国外
+      disabled: false
+  - wildcard:
+      match: '*'
+      value: 国外
+      disabled: false
+  public_ip_lookup_url: https://ifconfig.me/ip
+proxies:
+- vless:
+    name: DIY-vless-USA
+    server: 107.172.82.231
+    port: 443
+    user_id: d62353a9-17cd-4102-8c41-739501a5bc34
+    tfo: false
+    udp_relay: true
+    flow: xtls-rprx-vision
+    transport:
+      tls:
+        sni: www.apple.com
+        skip_tls_verify: true
+- hysteria2:
+    name: DIY-hysteria2-USA
+    server: 107.172.82.231
+    port: 443
+    auth: Apsw9Pd26P
+    sni: www.apple.com
+    skip_tls_verify: true
+policy_groups:
+- external:
+    name: 全部节点
+    type: select
+    urls:
+    - https://luck7.ggff.net/KEY?sub
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-yu-96.png
+    hidden: false
+- select:
+    name: 自建节点
+    policies:
+    - 全部节点
+    flatten: true
+    filter: (?i)(自建|DIY|VPS|MyNode|Self|NAT)
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-cloudflare-96.png
+- auto_test:
+    name: 香港节点
+    policies:
+    - 全部节点
+    flatten: true
+    filter: (?i)(🇭🇰|香港|\bHK\b|\bHKG\b|Hong\s*Kong|HongKong)
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/HongKong.png
+- auto_test:
+    name: 美国节点
+    policies:
+    - 全部节点
+    flatten: true
+    filter: (?i)(🇺🇸|美国|美國|\bUS\b|\bUSA\b|United\s*States)
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/UnitedStates.png
+- auto_test:
+    name: 台湾节点
+    policies:
+    - 全部节点
+    flatten: true
+    filter: (?i)(🇹🇼|台湾|台灣|\bTW\b|Taiwan|TW)
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Taiwan.png
+- auto_test:
+    name: 日本节点
+    policies:
+    - 全部节点
+    flatten: true
+    filter: (?i)(🇯🇵|日本|\bJP\b|\bJPN\b|Japan)
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Japan.png
+- auto_test:
+    name: 狮城节点
+    policies:
+    - 全部节点
+    flatten: true
+    filter: (?i)(🇸🇬|新加坡|狮城|獅城|\bSG\b|Singapore)
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Singapore.png
+- select:
+    name: 其他节点
+    policies:
+    - 全部节点
+    flatten: true
+    filter: ^((?!(自建|DIY|VPS|MyNode|Self|NAT|🇭🇰|香港|\bHK\b|\bHKG\b|Hong\s*Kong|HongKong|🇺🇸|美国|美國|\bUS\b|\bUSA\b|United\s*States|🇹🇼|台湾|台灣|\bTW\b|Taiwan|🇯🇵|日本|\bJP\b|\bJPN\b|Japan|🇸🇬|新加坡|狮城|獅城|\bSG\b|Singapore)).)*$
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WorldMap.png
+- select:
+    name: 自选策略
+    policies:
+    - 自建节点
+    - 香港节点
+    - 美国节点
+    - 狮城节点
+    - 台湾节点
+    - 日本节点
+    - 其他节点
+    - DIRECT
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-zy-100.png
+- select:
+    name: AIGC
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/ChatGPT.png
+- select:
+    name: Apple
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Apple.png
+- select:
+    name: Disney
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Disney.png
+- select:
+    name: GitHub
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/GitHub.png
+- select:
+    name: Google
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Google.png
+- select:
+    name: Microsoft
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Microsoft.png
+- select:
+    name: Netflix
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Netflix.png
+- select:
+    name: PayPal
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/PayPal.png
+- select:
+    name: Spotify
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Spotify.png
+- select:
+    name: Telegram
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Telegram.png
+- select:
+    name: TikTok
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/TikTok.png
+- select:
+    name: Twitter
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Twitter.png
+- select:
+    name: WeChat
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WeChat.png
+- select:
+    name: YouTube
+    policies:
+    - 自选策略
+    flatten: true
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/YouTube.png
+- select:
+    name: 交易所
+    policies:
+    - 自选策略
+    - DIRECT
+    flatten: true
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-btc-94.png
+- select:
+    name: TRDR
+    policies:
+    - 全部节点
+    - DIRECT
+    flatten: true
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-usdt144.png
+rules:
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Reject.yaml
+    policy: REJECT
+- domain_regex:
+    match: ^ad\..*|^ads\..*|^advert\..*
+    policy: REJECT
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Lan.yaml
+    policy: DIRECT
+- rule_set:
+    match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/ChinaMax/ChinaMax_All.list
+    policy: DIRECT
+- domain_suffix:
+    match: '*.cn'
+    policy: DIRECT
+- geoip:
+    match: CN
+    policy: DIRECT
+    no_resolve: true
+- rule_set:
+    match: https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/rule/rule/binance.yaml
+    policy: 交易所
+- rule_set:
+    match: https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/rule/rule/trdr.yaml
+    policy: TRDR
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Apple.yaml
+    policy: Apple
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/AppleProxy.yaml
+    policy: 香港节点
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/AIGC.yaml
+    policy: AIGC
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Bing.yaml
+    policy: 美国节点
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Disney.yaml
+    policy: Disney
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Github.yaml
+    policy: GitHub
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Google.yaml
+    policy: Google
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Microsoft.yaml
+    policy: Microsoft
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Netflix.yaml
+    policy: Netflix
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/PayPal.yaml
+    policy: PayPal
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Spotify.yaml
+    policy: Spotify
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Telegram.yaml
+    policy: Telegram
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/TikTok.yaml
+    policy: TikTok
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/Twitter.yaml
+    policy: Twitter
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/WeChat.yaml
+    policy: WeChat
+- rule_set:
+    match: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Rule/YouTube.yaml
+    policy: YouTube
+- rule_set:
+    match: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Surge/Proxy/Proxy_All.list
+    policy: 自选策略
+- default:
+    policy: 自选策略
+mitm:
+  enabled: true
+  ca_p12: Legern.p12
+  ca_passphrase: '241936'
+  hostnames:
+    includes:
+    - '*.google.com'
+    - '*.github.com'
+modules:
+- name: reddit
+  url: http://script.hub/file/_start_/https://kelee.one/Tool/Loon/Lpx/Reddit_remove_ads.lpx/_end_/Reddit_remove_ads.sgmodule?type=loon-plugin&target=surge-module&del=true&jqEnabled=true&pm=.&sni=.
+  enabled: true
+- name: 中文字幕
+  url: https://github.com/DualSubs/YouTube/releases/latest/download/DualSubs.YouTube.yaml
+  enabled: true
+- name: boxjs
+  url: http://script.hub/file/_start_/https://kelee.one/Tool/Loon/Lpx/BoxJs.lpx/_end_/BoxJs.sgmodule?type=loon-plugin&target=surge-module&del=true&jqEnabled=true&pm=.&sni=.
+  enabled: false
+- name: script hub
+  url: https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/main/modules/script-hub.surge.sgmodule
+  enabled: true
+- name: 可莉
+  url: https://raw.githubusercontent.com/158212892/QuantumultXMark/refs/heads/main/My/Egern/modules/pluginhub.yaml
+  enabled: true
+- url: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Module/Panel.yaml
+  enabled: true
+- name: Sub-Store
+  url: https://raw.githubusercontent.com/sub-store-org/Sub-Store/master/config/Egern.yaml
+  enabled: true
+- name: WeatherKit
+  url: https://github.com/NSRingo/WeatherKit/releases/latest/download/iRingo.WeatherKit.sgmodule
+  enabled: true
+- name: YouTube Enhance
+  url: https://raw.githubusercontent.com/Maasea/sgmodule/master/YouTube.Enhance.sgmodule
+  enabled: true
