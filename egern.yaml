@@ -93,6 +93,27 @@ proxies:
     auth: Apsw9Pd26P
     sni: www.apple.com
     skip_tls_verify: true
+- vless:
+    name: DIY-vless-链式
+    server: 107.172.82.231
+    port: 443
+    user_id: d62353a9-17cd-4102-8c41-739501a5bc34
+    tfo: false
+    udp_relay: true
+    flow: xtls-rprx-vision
+    transport:
+      tls:
+        sni: www.apple.com
+        skip_tls_verify: true
+    prev_hop: 中转选择
+- hysteria2:
+    name: DIY-hysteria2-链式
+    server: 107.172.82.231
+    port: 443
+    auth: Apsw9Pd26P
+    sni: www.apple.com
+    skip_tls_verify: true
+    prev_hop: 中转选择
 policy_groups:
 - external:
     name: 全部节点
@@ -151,6 +172,20 @@ policy_groups:
     filter: ^((?!(自建|DIY|VPS|MyNode|Self|NAT|🇭🇰|香港|\bHK\b|\bHKG\b|Hong\s*Kong|HongKong|🇺🇸|美国|美國|\bUS\b|\bUSA\b|United\s*States|🇹🇼|台湾|台灣|\bTW\b|Taiwan|🇯🇵|日本|\bJP\b|\bJPN\b|Japan|🇸🇬|新加坡|狮城|獅城|\bSG\b|Singapore)).)*$
     icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WorldMap.png
 - select:
+    name: 中转选择
+    policies:
+    - 全部节点
+    flatten: true
+    filter: ^((?!(自建|DIY|VPS|MyNode|Self|NAT)).)*$
+    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WorldMap.png
+- select:
+    name: 链式代理
+    policies:
+    - DIY-vless-链式
+    - DIY-hysteria2-链式
+    - DIRECT
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-cloudflare-96.png
+- select:
     name: 自选策略
     policies:
     - 自建节点
@@ -160,6 +195,7 @@ policy_groups:
     - 台湾节点
     - 日本节点
     - 其他节点
+    - 链式代理
     - DIRECT
     icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-zy-100.png
 - select:
