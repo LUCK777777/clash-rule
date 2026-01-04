@@ -20,7 +20,6 @@ dns:
   - 223.5.5.5
   - 223.6.6.6
   - 119.29.29.29
-
   hosts:
     cloudflare-dns.com:
     - 1.1.1.1
@@ -38,14 +37,12 @@ dns:
     dns.alidns.com:
     - 223.5.5.5
     - 223.6.6.6
-
   upstreams:
     国外:
     - tls://one.one.one.one
     - tls://dns.google
     - https://cloudflare-dns.com/dns-query
     - https://dns.google/dns-query
-
     国内:
     - tls://dns.alidns.com
     - https://dns.alidns.com/dns-query
@@ -53,18 +50,15 @@ dns:
     - https://doh.pub/dns-query
     - 223.5.5.5
     - 223.6.6.6
-
     腾讯:
     - tls://dot.pub
     - https://doh.pub/dns-query
     - 119.29.29.29
-
     阿里巴巴:
     - tls://dns.alidns.com
     - https://dns.alidns.com/dns-query
     - 223.5.5.5
     - 223.6.6.6
-
     字节跳动:
     - 180.184.1.1
     - 180.184.2.2
@@ -200,20 +194,52 @@ policy_groups:
     flatten: true
     filter: ^((?!(自建|DIY|VPS|MyNode|Self|NAT|🇭🇰|香港|\bHK\b|\bHKG\b|Hong\s*Kong|HongKong|🇺🇸|美国|美國|\bUS\b|\bUSA\b|United\s*States|🇹🇼|台湾|台灣|\bTW\b|Taiwan|🇯🇵|日本|\bJP\b|\bJPN\b|Japan|🇸🇬|新加坡|狮城|獅城|\bSG\b|Singapore)).)*$
     icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WorldMap.png
-- select:
-    name: 中转选择
+- auto_test:
+    name: 中转-自动
     policies:
     - 全部节点
     flatten: true
-    filter: ^((?!(自建|DIY|VPS|MyNode|Self|NAT)).)*$
-    icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WorldMap.png
+    filter: ^((?!(自建|DIY|VPS|MyNode|Self|NAT|链式|落地)).)*$
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-fei-94.png
 - select:
-    name: 链式代理
+    name: 中转-手动
+    policies:
+    - 香港节点
+    - 日本节点
+    - 狮城节点
+    - 美国节点
+    - 台湾节点
+    - 其他节点
+    - 全部节点
+    - DIRECT
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-fei-94.png
+- select:
+    name: 中转选择
+    policies:
+    - 中转-自动
+    - 中转-手动
+    - DIRECT
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-fei-94.png
+- auto_test:
+    name: 落地-自动
     policies:
     - DIY-vless-链式
     - DIY-hysteria2-链式
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/feiluo.png
+- select:
+    name: 落地节点
+    policies:
+    - 落地-自动
+    - DIY-vless-链式
+    - DIY-hysteria2-链式
     - DIRECT
-    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-cloudflare-96.png
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/feiluo.png
+- select:
+    name: 链式代理
+    policies:
+    - 落地节点
+    - DIRECT
+    icon: https://raw.githubusercontent.com/LUCK777777/photo/main/feiluo.png
 - select:
     name: 自选策略
     policies:
