@@ -18,27 +18,56 @@ include_local_networks: false
 dns:
   bootstrap:
   - 223.5.5.5
+  - 223.6.6.6
   - 119.29.29.29
+
+  hosts:
+    cloudflare-dns.com:
+    - 1.1.1.1
+    - 1.0.0.1
+    one.one.one.one:
+    - 1.1.1.1
+    - 1.0.0.1
+    dns.google:
+    - 8.8.8.8
+    - 8.8.4.4
+    doh.pub:
+    - 119.29.29.29
+    dot.pub:
+    - 119.29.29.29
+    dns.alidns.com:
+    - 223.5.5.5
+    - 223.6.6.6
+
   upstreams:
     国外:
-    - tls://1.1.1.1
-    - https://8.8.8.8/dns-query
-    - https://1.1.1.1/dns-query
+    - tls://one.one.one.one
     - tls://dns.google
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
+
     国内:
     - tls://dns.alidns.com
+    - https://dns.alidns.com/dns-query
     - tls://dot.pub
     - https://doh.pub/dns-query
-    - https://dns.alidns.com/dns-query
+    - 223.5.5.5
+    - 223.6.6.6
+
     腾讯:
     - tls://dot.pub
     - https://doh.pub/dns-query
+    - 119.29.29.29
+
     阿里巴巴:
     - tls://dns.alidns.com
     - https://dns.alidns.com/dns-query
+    - 223.5.5.5
+    - 223.6.6.6
+
     字节跳动:
-    - 180.184.2.2
     - 180.184.1.1
+    - 180.184.2.2
   forward:
   - proxy_rule_set:
       match: https://rule.kelee.one/Loon/DouYin.lsr
