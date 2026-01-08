@@ -37,7 +37,7 @@ proxy-providers:
         interval: 300
       filter: '^(?!.*(拒绝|直连|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author|traffic))'
       proxy: 故障转移
-    url: 订阅链接1
+    url: https://luck7.ggff.net/KEY?b64
     override:
       <<: &ovr_base
         skip-cert-verify: true
