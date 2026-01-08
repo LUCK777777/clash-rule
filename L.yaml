@@ -1,0 +1,1124 @@
+mode: rule
+mixed-port: 7890
+ipv6: true
+allow-lan: false
+unified-delay: true
+tcp-concurrent: true
+global-ua: clash.meta
+find-process-mode: strict
+global-client-fingerprint: chrome
+keep-alive-idle: 600
+keep-alive-interval: 30
+geodata-mode: false
+geodata-loader: memconservative
+geo-auto-update: true
+geo-update-interval: 48
+geox-url:
+  geosite: https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat
+  mmdb: https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.metadb
+  geoip: https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat
+  asn: https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb
+external-controller: 127.0.0.1:9090
+secret: JzhYrG-RzSbFfI23KSchkLnanZ2M2R3z
+external-ui: ui
+external-ui-url: https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip
+
+# =====================
+# Subscriptions (proxy-providers)
+# =====================
+proxy-providers:
+  Airport_01:
+    <<: &pp_base
+      type: http
+      interval: 86400
+      health-check: &hc
+        enable: true
+        url: https://www.gstatic.com/generate_204
+        interval: 300
+      filter: '^(?!.*(拒绝|直连|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author|traffic))'
+      proxy: 故障转移
+    url: https://luck7.ggff.net/KEY?clash
+    override:
+      <<: &ovr_base
+        skip-cert-verify: true
+        udp: true
+      additional-prefix: ''
+  Airport_02:
+    <<: *pp_base
+    url: 订阅链接2
+    override:
+      <<: *ovr_base
+      additional-prefix: '[机场名称2]'
+  Airport_03:
+    <<: *pp_base
+    url: 订阅链接3
+    override:
+      <<: *ovr_base
+      additional-prefix: '[机场名称3]'
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports:
+      - 80
+      - 8080-8880
+      override-destination: true
+    TLS:
+      ports:
+      - 443
+      - 8443
+    QUIC:
+      ports:
+      - 443
+      - 8443
+  force-domain:
+  - '*.v2ex.com'
+  skip-domain:
+  - Mijia Cloud
+  - dlg.io.mi.com
+  - '*.push.apple.com'
+  - '*.apple.com'
+  - '*.wechat.com'
+  - '*.qpic.cn'
+  - '*.qq.com'
+  - '*.wechatapp.com'
+  - '*.vivox.com'
+  - '*.oray.com'
+  - '*.sunlogin.net'
+tun:
+  enable: true
+  stack: mixed
+  mtu: 1500
+  dns-hijack:
+  - any:53
+  - tcp://any:53
+  auto-route: true
+  auto-redirect: false
+  auto-detect-interface: true
+  strict-route: true
+  inet4-address: 198.18.0.1/16
+dns:
+  enable: true
+  listen: 127.0.0.1:1053
+  ipv6: true
+  prefer-h3: false
+  respect-rules: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+  - rule-set:fakeip_filter_domain
+  - rule-set:game_cn_domain
+  - rule-set:bank_cn_domain
+  - rule-set:wechat_domain
+  - rule-set:ai_cn_domain
+  - rule-set:NetEaseMusic_domain
+  - rule-set:fcm_domain
+  - rule-set:alibaba_domain
+  - rule-set:media_cn_domain
+  - rule-set:xiaomi_domain
+  - rule-set:steam_cn_domain
+  - rule-set:pt_cn_domain
+  - rule-set:public-tracker_domain
+  - rule-set:115_domain
+  - rule-set:aliyun_domain
+  - rule-set:direct_domain
+  - rule-set:apple_cn_domain
+  - rule-set:apple_firmware_domain
+  - rule-set:iptv_domain
+  - rule-set:private_domain
+  - rule-set:cn_domain
+  default-nameserver:
+  - 119.29.29.29
+  - 180.184.1.1
+  proxy-server-nameserver:
+  - https://doh.pub/dns-query
+  - https://223.5.5.5/dns-query
+  direct-nameserver:
+  - https://doh.pub/dns-query
+  - https://223.5.5.5/dns-query
+  nameserver:
+  - https://dns.google/dns-query
+  - https://dns.cloudflare.com/dns-query
+proxy-groups:
+- name: 故障转移
+  type: fallback
+  include-all: true
+  interval: 300
+  hidden: true
+  icon: https://pub-8feead0908f649a8b94397f152fb9cba.r2.dev/fallback.png
+- name: 全部节点
+  type: select
+  include-all: true
+  icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-yu-96.png
+- name: 自建节点
+  type: select
+  include-all: true
+  filter: (?i)(自建|DIY|VPS|MyNode|Self|NAT)
+  icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-cloudflare-96.png
+- name: 香港节点
+  type: url-test
+  include-all: true
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 20
+  filter: (?i)(🇭🇰|香港|Hong\s*Kong|HongKong|(?:^|[\s\-_|\[\]()])HK(?:$|[\s\-_|\[\]()\d])|(?:^|[\s\-_|\[\]()])HKG(?:$|[\s\-_|\[\]()\d]))
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/HongKong.png
+  lazy: true
+- name: 狮城节点
+  type: url-test
+  include-all: true
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 20
+  filter: (?i)(🇸🇬|新加坡|狮城|獅城|Singapore|(?:^|[\s\-_|\[\]()])SG(?:$|[\s\-_|\[\]()\d])|(?:^|[\s\-_|\[\]()])SIN(?:$|[\s\-_|\[\]()\d])|(?:^|[\s\-_|\[\]()])SGP(?:$|[\s\-_|\[\]()\d]))
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Singapore.png
+  lazy: true
+- name: 日本节点
+  type: url-test
+  include-all: true
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 20
+  filter: (?i)(🇯🇵|日本|Japan|(?:^|[\s\-_|\[\]()])JP(?:$|[\s\-_|\[\]()\d])|(?:^|[\s\-_|\[\]()])JPN(?:$|[\s\-_|\[\]()\d]))
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Japan.png
+  lazy: true
+- name: 台湾节点
+  type: url-test
+  include-all: true
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 20
+  filter: (?i)(🇹🇼|台湾|台灣|Taiwan|(?:^|[\s\-_|\[\]()])TW(?:$|[\s\-_|\[\]()\d])|(?:^|[\s\-_|\[\]()])TPE(?:$|[\s\-_|\[\]()\d]))
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Taiwan.png
+  lazy: true
+- name: 美国节点
+  type: url-test
+  include-all: true
+  url: https://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 20
+  filter: (?i)(🇺🇸|美国|美國|United\s*States|UnitedStates|(?:^|[\s\-_|\[\]()])USA(?:$|[\s\-_|\[\]()\d])|(?:^|[\s\-_|\[\]()])US(?:$|[\s\-_|\[\]()\d]))
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/UnitedStates.png
+  lazy: true
+- name: 其他节点
+  type: select
+  include-all: true
+  filter: ^((?!(自建|DIY|VPS|MyNode|Self|NAT|🇭🇰|香港|\bHK\b|\bHKG\b|Hong\s*Kong|HongKong|🇺🇸|美国|美國|\bUS\b|\bUSA\b|United\s*States|🇹🇼|台湾|台灣|\bTW\b|Taiwan|🇯🇵|日本|\bJP\b|\bJPN\b|Japan|🇸🇬|新加坡|狮城|獅城|\bSG\b|Singapore)).)*$
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WorldMap.png
+- name: 自选策略
+  type: select
+  proxies:
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-zy-100.png
+- name: AIGC
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/ChatGPT.png
+- name: Apple
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Apple.png
+- name: Disney
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Disney.png
+- name: GitHub
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/GitHub.png
+- name: Google
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Google.png
+- name: Microsoft
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Microsoft.png
+- name: Netflix
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Netflix.png
+- name: PayPal
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/PayPal.png
+- name: Spotify
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Spotify.png
+- name: Telegram
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Telegram.png
+- name: TikTok
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/TikTok.png
+- name: Twitter
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Twitter.png
+- name: WeChat
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WeChat.png
+- name: YouTube
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/YouTube.png
+- name: 交易所
+  type: select
+  proxies:
+  - 自选策略
+  - 自建节点
+  - 香港节点
+  - 狮城节点
+  - 日本节点
+  - 台湾节点
+  - 美国节点
+  - 其他节点
+  - DIRECT
+  icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-btc-94.png
+- name: TRDR
+  type: select
+  icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-usdt144.png
+  include-all: true
+rule-providers:
+  private_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.mrs
+  bank_cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-bank-cn.mrs
+  xiaomi_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/xiaomi.mrs
+  biliintl_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/bilibili%40!cn.mrs
+  bilibili_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/bilibili.mrs
+  bahamut_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/bahamut.mrs
+  spotify_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/spotify.mrs
+  steam_cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/steam%40cn.mrs
+  steamcdn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/Steam-domain.mrs
+  steam_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/steam.mrs
+  ai!cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-ai-!cn.mrs
+  openai_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openai.mrs
+  youtube_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs
+  google_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/google.mrs
+  github_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/github.mrs
+  telegram_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs
+  netflix_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/netflix.mrs
+  paypal_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/paypal.mrs
+  onedrive_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/onedrive.mrs
+  microsoft_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.mrs
+  apple_firmware_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/applefirmware.mrs
+  apple_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple.mrs
+  speedtest_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/ookla-speedtest.mrs
+  tiktok_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.mrs
+  gfw_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/gfw.mrs
+  geolocation-!cn:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs
+  cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs
+  media_cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-media-cn.mrs
+  media!cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-social-media-!cn.mrs
+  Cloudflare_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/cloudflare.mrs
+  gitbook_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/gitbook.mrs
+  disney_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/disney.mrs
+  hbo_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/hbo.mrs
+  primevideo_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/primevideo.mrs
+  NetEaseMusic_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/NetEaseMusic-domain.mrs
+  Amazon_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/amazon.mrs
+  Shopee_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/shopee.mrs
+  ebay_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/ebay.mrs
+  appleTV_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/appletv.mrs
+  Epic_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/epicgames.mrs
+  EA_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/ea.mrs
+  Blizzard_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/blizzard.mrs
+  UBI_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/ubi.mrs
+  Sony_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/sony.mrs
+  Nintendo_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/nintendo.mrs
+  facebook_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/facebook.mrs
+  whatsapp_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/whatsapp.mrs
+  instagram_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/instagram.mrs
+  threads_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/threads.mrs
+  meta_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/meta.mrs
+  Wise_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/wise.mrs
+  ifast_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/ifast.mrs
+  line_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/line.mrs
+  talkatone_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/Talkatone-domain.mrs
+  Shopify_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/shopify.mrs
+  signal_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/signal.mrs
+  wechat_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/WeChat.mrs
+  proxy_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/proxy.mrs
+  direct_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/direct.mrs
+  apple_cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/apple%40cn.mrs
+  alibaba_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/alibaba.mrs
+  ai_cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-ai-cn.mrs
+  discord_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/discord.mrs
+  fcm_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/googlefcm.mrs
+  emby_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/emby.mrs
+  pt_cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-pt.mrs
+  public-tracker_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-public-tracker.mrs
+  115_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/115.mrs
+  aliyun_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/aliyun.mrs
+  twitch_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/twitch.mrs
+  porn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-porn.mrs
+  iptv_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/iptv.mrs
+  googlevpn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/googleVPN.mrs
+  ai_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/ai.mrs
+  TVB_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/tvb.mrs
+  game_cn_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-games%40cn.mrs
+  fakeip_filter_domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/fakeip-filter.mrs
+  bilibili_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo-lite/geoip/bilibili.mrs
+  cn_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs
+  google_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/google.mrs
+  telegram_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs
+  netflix_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/netflix.mrs
+  Amazon_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/IP/amazon-ip.mrs
+  facebook_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/facebook.mrs
+  twitter_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/twitter.mrs
+  private_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/private.mrs
+  talkatone_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/IP/Talkatone-ip.mrs
+  steamcdn_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/IP/steamCDN-ip.mrs
+  NetEaseMusic_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/IP/NetEaseMusic-ip.mrs
+  emby_ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/IP/emby-ip.mrs
+  google_asn_cn:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/IP/AS24424.mrs
+  discord_asn:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/IP/AS49544.mrs
+  wechat_asn:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+    url: https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/IP/AS132203.mrs
+rules:
+- RULE-SET,wechat_domain,DIRECT
+- RULE-SET,wechat_asn,DIRECT,no-resolve
+- RULE-SET,speedtest_domain,自选策略
+- RULE-SET,Cloudflare_domain,自选策略
+- RULE-SET,Wise_domain,自选策略
+- RULE-SET,paypal_domain,PayPal
+- RULE-SET,proxy_domain,自选策略
+- RULE-SET,ai!cn_domain,AIGC
+- RULE-SET,ai_domain,AIGC
+- RULE-SET,openai_domain,AIGC
+- RULE-SET,biliintl_domain,自选策略
+- RULE-SET,bilibili_domain,DIRECT
+- RULE-SET,bilibili_ip,DIRECT,no-resolve
+- RULE-SET,bahamut_domain,自选策略
+- RULE-SET,bank_cn_domain,DIRECT
+- RULE-SET,ai_cn_domain,DIRECT
+- RULE-SET,direct_domain,DIRECT
+- RULE-SET,alibaba_domain,DIRECT
+- RULE-SET,115_domain,DIRECT
+- RULE-SET,aliyun_domain,DIRECT
+- RULE-SET,github_domain,GitHub
+- RULE-SET,gitbook_domain,GitHub
+- RULE-SET,googlevpn_domain,Google
+- RULE-SET,youtube_domain,YouTube
+- RULE-SET,fcm_domain,Google
+- RULE-SET,google_domain,Google
+- RULE-SET,google_asn_cn,Google,no-resolve
+- RULE-SET,google_ip,Google,no-resolve
+- RULE-SET,onedrive_domain,Microsoft
+- RULE-SET,microsoft_domain,Microsoft
+- RULE-SET,telegram_domain,Telegram
+- RULE-SET,telegram_ip,Telegram,no-resolve
+- RULE-SET,line_domain,自选策略
+- RULE-SET,talkatone_domain,自选策略
+- RULE-SET,talkatone_ip,自选策略,no-resolve
+- RULE-SET,discord_domain,自选策略
+- RULE-SET,discord_asn,自选策略,no-resolve
+- RULE-SET,signal_domain,自选策略
+- RULE-SET,iptv_domain,DIRECT
+- RULE-SET,private_domain,DIRECT
+- DOMAIN-KEYWORD,hk.tv.global.mi.com,自选策略
+- RULE-SET,xiaomi_domain,DIRECT
+- RULE-SET,steam_cn_domain,DIRECT
+- RULE-SET,steamcdn_domain,DIRECT
+- RULE-SET,steamcdn_ip,DIRECT,no-resolve
+- RULE-SET,NetEaseMusic_domain,DIRECT
+- RULE-SET,NetEaseMusic_ip,DIRECT,no-resolve
+- RULE-SET,pt_cn_domain,DIRECT
+- RULE-SET,public-tracker_domain,DIRECT
+- RULE-SET,media_cn_domain,DIRECT
+- RULE-SET,appleTV_domain,Apple
+- RULE-SET,apple_cn_domain,DIRECT
+- RULE-SET,apple_firmware_domain,Apple
+- RULE-SET,apple_domain,Apple
+- RULE-SET,tiktok_domain,TikTok
+- RULE-SET,netflix_domain,Netflix
+- RULE-SET,netflix_ip,Netflix,no-resolve
+- RULE-SET,disney_domain,Disney
+- RULE-SET,hbo_domain,自选策略
+- RULE-SET,primevideo_domain,自选策略
+- RULE-SET,emby_domain,自选策略
+- RULE-SET,emby_ip,自选策略,no-resolve
+- RULE-SET,spotify_domain,Spotify
+- RULE-SET,facebook_domain,自选策略
+- RULE-SET,whatsapp_domain,自选策略
+- RULE-SET,instagram_domain,自选策略
+- RULE-SET,threads_domain,自选策略
+- RULE-SET,meta_domain,自选策略
+- RULE-SET,facebook_ip,自选策略,no-resolve
+- DOMAIN-SUFFIX,mytvsuper.com,自选策略
+- DOMAIN-SUFFIX,mytv.com.hk,自选策略
+- RULE-SET,twitch_domain,自选策略
+- RULE-SET,porn_domain,自选策略
+- RULE-SET,TVB_domain,自选策略
+- RULE-SET,media!cn_domain,自选策略
+- RULE-SET,twitter_ip,自选策略,no-resolve
+- RULE-SET,steam_domain,自选策略
+- RULE-SET,Epic_domain,自选策略
+- RULE-SET,EA_domain,自选策略
+- RULE-SET,Blizzard_domain,自选策略
+- RULE-SET,UBI_domain,自选策略
+- RULE-SET,Sony_domain,自选策略
+- RULE-SET,Nintendo_domain,自选策略
+- RULE-SET,ifast_domain,DIRECT
+- RULE-SET,Amazon_domain,自选策略
+- RULE-SET,Amazon_ip,自选策略,no-resolve
+- RULE-SET,Shopee_domain,自选策略
+- RULE-SET,Shopify_domain,自选策略
+- RULE-SET,ebay_domain,自选策略
+- RULE-SET,gfw_domain,自选策略
+- RULE-SET,geolocation-!cn,自选策略
+- RULE-SET,cn_domain,DIRECT
+- RULE-SET,private_ip,DIRECT,no-resolve
+- RULE-SET,cn_ip,DIRECT,no-resolve
+- MATCH,自选策略
+proxies:
+- name: 🟢 直连
+  type: direct
+  udp: true
+rule-anchor:
+  ip:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: mrs
+  ip_text:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: text
+  ip_yaml:
+    type: http
+    interval: 86400
+    behavior: ipcidr
+    format: yaml
+  domain:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: mrs
+  domain_text:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: text
+  domain_yaml:
+    type: http
+    interval: 86400
+    behavior: domain
+    format: yaml
+  class:
+    type: http
+    interval: 86400
+    behavior: classical
+    format: text
+  class_yaml:
+    type: http
+    interval: 86400
+    behavior: classical
+    format: yaml
+log-level: warning
