@@ -1,4 +1,4 @@
-# @专用配置
+# @L专用配置
 # 更新时间: 2026.01.01
 
 # --- 基础配置 ---
@@ -148,9 +148,6 @@ policy_groups:
       filter: "(?i)(🇸🇬|新加坡|狮城|獅城|\\bSG\\b|Singapore)"
       icon: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Singapore.png
 
-  # ✅ 已删除：韩国节点（让韩国掉入其他节点）
-
-  # 剩余节点（已移除“韩国/KR/KOR/Korea”的排除条件，让韩国节点落入此组）
   - select:
       name: 其他节点
       policies:
@@ -399,18 +396,29 @@ mitm:
 
 # --- 模块配置 ---
 modules:
-  - url: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Module/Panel.yaml
-    enabled: true
-    interval: 3600
-
-  - name: Sub-Store
-    url: https://raw.githubusercontent.com/sub-store-org/Sub-Store/master/config/Egern.yaml
-    enabled: true
-
-  - name: WeatherKit
-    url: https://github.com/NSRingo/WeatherKit/releases/latest/download/iRingo.WeatherKit.sgmodule
-    enabled: true
-
-  - name: "YouTube Enhance"
-    url: https://raw.githubusercontent.com/Maasea/sgmodule/master/YouTube.Enhance.sgmodule
-    enabled: true
+- name: reddit
+  url: http://script.hub/file/_start_/https://kelee.one/Tool/Loon/Lpx/Reddit_remove_ads.lpx/_end_/Reddit_remove_ads.sgmodule?type=loon-plugin&target=surge-module&del=true&jqEnabled=true&pm=.&sni=.
+  enabled: true
+- name: 中文字幕
+  url: https://github.com/DualSubs/YouTube/releases/latest/download/DualSubs.YouTube.yaml
+  enabled: true
+- name: boxjs
+  url: http://script.hub/file/_start_/https://kelee.one/Tool/Loon/Lpx/BoxJs.lpx/_end_/BoxJs.sgmodule?type=loon-plugin&target=surge-module&del=true&jqEnabled=true&pm=.&sni=.
+  enabled: false
+- name: script hub
+  url: https://raw.githubusercontent.com/Script-Hub-Org/Script-Hub/main/modules/script-hub.surge.sgmodule
+  enabled: true
+- name: 可莉
+  url: https://raw.githubusercontent.com/158212892/QuantumultXMark/refs/heads/main/My/Egern/modules/pluginhub.yaml
+  enabled: true
+- url: https://raw.githubusercontent.com/jnlaoshu/MySelf/main/Egern/Module/Panel.yaml
+  enabled: true
+- name: Sub-Store
+  url: https://raw.githubusercontent.com/sub-store-org/Sub-Store/master/config/Egern.yaml
+  enabled: true
+- name: WeatherKit
+  url: https://github.com/NSRingo/WeatherKit/releases/latest/download/iRingo.WeatherKit.sgmodule
+  enabled: true
+- name: YouTube Enhance
+  url: https://raw.githubusercontent.com/Maasea/sgmodule/master/YouTube.Enhance.sgmodule
+  enabled: true
