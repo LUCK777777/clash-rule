@@ -1,0 +1,76 @@
+mode: rule
+ipv6: true
+allow-lan: false
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+    QUIC:
+      ports: [443, 8443]
+  skip-domain:
+    - '*.push.apple.com'
+    - '*.apple.com'
+    - '*.wechat.com'
+    - '*.qq.com'
+    - '*.qpic.cn'
+    - '*.wechatapp.com'
+
+tun:
+  enable: true
+  stack: mixed
+  mtu: 1500
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+  inet4-address: 198.18.0.1/16
+
+dns:
+  enable: true
+  listen: 127.0.0.1:1053
+  ipv6: true
+  prefer-h3: false
+  respect-rules: true
+
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+
+  # 只放通用必备，避免引用不存在的 rule-set 导致报错
+  fake-ip-filter:
+    - 'localhost'
+    - '*.local'
+    - '*.lan'
+    - '*.home.arpa'
+    - '*.push.apple.com'
+    - 'time.*'
+    - 'ntp.*'
+
+  # 用于解析 DoH 域名本身（别用系统 DNS）
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+
+  # 关键：开启 respect-rules 时必须有这个，否则容易“看起来像泄露”
+  proxy-server-nameserver:
+    - https://doh.pub/dns-query
+    - https://223.5.5.5/dns-query
+
+  direct-nameserver:
+    - https://doh.pub/dns-query
+    - https://223.5.5.5/dns-query
+
+  # 非直连域名的解析（通常会通过代理策略走）
+  nameserver:
+    - https://dns.google/dns-query
+    - https://dns.cloudflare.com/dns-query
