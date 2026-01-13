@@ -95,7 +95,7 @@ policy_groups:
       name: 全部节点
       type: select
       urls:
-        - https://ch.liy343012.workers.dev/key?sub
+        - 
       icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-yu-96.png
 
   # 自建节点（按关键词匹配：自建|DIY|VPS|MyNode|Self|NAT）
