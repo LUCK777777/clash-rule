@@ -142,7 +142,7 @@ policy_groups:
     name: 全部节点
     type: select
     urls:
-    - https://luck7.ggff.net/KEY?sub
+    - 
     icon: https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-yu-96.png
     hidden: false
 - select:
