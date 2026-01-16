@@ -1,4 +1,11 @@
-/*Clash Verge Rev / Mihomo Party 全局优化脚本*/
+/***
+ * Clash Verge Rev / Mihomo Party 全局优化脚本 v4.1
+ * 
+ * v4.1 更新：
+ * 1. AIGC 策略组改为手动选择，只包含美国、台湾、日本节点
+ * 2. 确认台湾策略组存在
+ * 3. 规则集URL全部使用稳定的 MetaCubeX 源
+ */
 
 // ==================== 工具函数 ====================
 function stringToArray(str) {
@@ -26,8 +33,8 @@ const args = typeof $arguments !== 'undefined' ? $arguments : {
   mode: 'default',
   ipv6: false,
   logLevel: 'warning',
-  tunMTU: 1500,          // 稳定值，可改为 9000 追求性能
-  dnsListen: '127.0.0.1:1053',  // 安全值，可改为 0.0.0.0:1053 给 LAN 用
+  tunMTU: 1500,
+  dnsListen: '127.0.0.1:1053',
 };
 
 let {
@@ -98,25 +105,22 @@ const selfBuiltRegex = /DIY|自建|VPS|MyNode|Self|NAT/i;
 // 倍率匹配（无 lookbehind，兼容性更好）
 const multiplierRegex = /(?:([0-9]+(?:\.[0-9]+)?)\s*[xX✕✖⨉倍率])|(?:[xX✕✖⨉倍率]\s*([0-9]+(?:\.[0-9]+)?))/;
 
-// ==================== 3. Filter 生成函数（关键修复） ====================
+// ==================== 3. Filter 生成函数 ====================
 const invalidFilterWords = '(断线|删除|订阅|重新|导入|全局|模式|防失联|邮箱|客服|官网|群|邀请|返利|循环|网站|网址|获取|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|提示|特别|访问|支持|教程|关注|更新|作者|加入|卸载|可解决|只看|gmail|@|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author|traffic)';
 
-// 生成包含额外条件的 filter
 function buildFilter(extraPattern) {
   return `(?i)^(?!.*${invalidFilterWords}).*${extraPattern}.*$`;
 }
 
-// 生成仅排除无效节点的 filter
 function buildValidOnlyFilter() {
   return `(?i)^(?!.*${invalidFilterWords}).*$`;
 }
 
-// 生成排除指定模式的 filter
 function buildExcludeFilter(excludePattern) {
   return `(?i)^(?!.*${invalidFilterWords})(?!.*${excludePattern}).*$`;
 }
 
-// ==================== 4. 地区定义（修复：移除 emoji 避免空分支） ====================
+// ==================== 4. 地区定义 ====================
 const regionDefinitions = [
   {
     name: '香港节点',
@@ -155,10 +159,13 @@ const regionDefinitions = [
   },
 ];
 
+// AIGC 专用地区 filter（美国、台湾、日本）
+const aigcRegionFilter = '(美国|美國|United\\s*States|UnitedStates|USA|\\bUS\\b|台湾|台灣|Taiwan|\\bTW\\b|日本|Japan|\\bJP\\b)';
+
 // ==================== 5. 通用配置 ====================
 const ruleProviderCommon = {
   type: 'http',
-  interval: 259200,  // 3天更新一次
+  interval: 259200,
   proxy: 'DIRECT',
 };
 
@@ -177,7 +184,7 @@ const urlTestOption = {
   tolerance: 50,
 };
 
-// ==================== 6. 规则提供者定义 ====================
+// ==================== 6. 规则提供者定义（全部使用稳定源） ====================
 const ruleProviderDefinitions = {
   // ===== 自定义规则 =====
   binance_domain: {
@@ -186,7 +193,7 @@ const ruleProviderDefinitions = {
     behavior: 'classical',
   },
 
-  // ===== 基础规则 =====
+  // ===== 基础规则（MetaCubeX 稳定源） =====
   private_domain: {
     url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.mrs',
     format: 'mrs',
@@ -198,24 +205,24 @@ const ruleProviderDefinitions = {
     behavior: 'domain',
   },
   direct_domain: {
-    url: 'https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/direct.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
 
   // ===== AI 相关 =====
   'ai!cn_domain': {
-    url: 'https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-ai-!cn.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   openai_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/openai.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/openai.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   ai_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-ai-cn.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
@@ -258,7 +265,7 @@ const ruleProviderDefinitions = {
     behavior: 'domain',
   },
   apple_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/apple%40cn.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple-cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
@@ -277,12 +284,12 @@ const ruleProviderDefinitions = {
 
   // ===== Twitter/X =====
   twitter_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/twitter.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitter.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   twitter_ip: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/twitter.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/twitter.mrs',
     format: 'mrs',
     behavior: 'ipcidr',
   },
@@ -299,12 +306,12 @@ const ruleProviderDefinitions = {
     behavior: 'ipcidr',
   },
   disney_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/disney.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/disney.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   spotify_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/spotify.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/spotify.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
@@ -314,12 +321,12 @@ const ruleProviderDefinitions = {
     behavior: 'domain',
   },
   twitch_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/twitch.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitch.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   bahamut_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/bahamut.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bahamut.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
@@ -333,70 +340,65 @@ const ruleProviderDefinitions = {
 
   // ===== 即时通讯 =====
   wechat_domain: {
-    url: 'https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/Domain/WeChat.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/wechat.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
-  wechat_asn: {
-    url: 'https://raw.githubusercontent.com/Lanlan13-14/Rules/refs/heads/main/rules/IP/AS132203.mrs',
-    format: 'mrs',
-    behavior: 'ipcidr',
-  },
   discord_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/discord.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/discord.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
 
   // ===== 社交媒体 =====
   'media!cn_domain': {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-social-media-!cn.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-social-media-!cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
 
   // ===== 哔哩哔哩 =====
   bilibili_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/bilibili.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bilibili.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
 
   // ===== 游戏 =====
   steam_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/steam.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   steam_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/steam%40cn.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam@cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   game_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-games%40cn.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-games@cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
 
   // ===== 国内服务 =====
   bank_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-bank-cn.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-bank-cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   alibaba_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/alibaba.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/alibaba.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   xiaomi_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/xiaomi.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/xiaomi.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
   media_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geosite/category-media-cn.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-media-cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
@@ -420,7 +422,7 @@ const ruleProviderDefinitions = {
     behavior: 'ipcidr',
   },
   private_ip: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/refs/heads/meta/geo/geoip/private.mrs',
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.mrs',
     format: 'mrs',
     behavior: 'ipcidr',
   },
@@ -508,7 +510,7 @@ function main(config) {
     'strict-route': true,
   };
 
-  // ==================== 7.4 DNS 配置（防泄漏） ====================
+  // ==================== 7.4 DNS 配置 ====================
   config['dns'] = {
     enable: true,
     listen: dnsListen,
@@ -560,7 +562,6 @@ function main(config) {
     regionGroups[r.name] = { ...r, proxies: [] };
   });
 
-  // 仅在无 providers 时遍历 proxies 分组
   if (!hasProxyProviders) {
     for (let i = 0; i < proxyCount; i++) {
       const proxy = proxies[i];
@@ -646,10 +647,10 @@ function main(config) {
     icon: 'https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-cloudflare-96.png',
   });
 
-  // 地区节点组
+  // 地区节点组（包含台湾节点）
   proxyGroups.push(...generatedRegionGroups);
 
-  // 其他节点（排除自建 + 所有地区）
+  // 其他节点
   const otherExclude = `(DIY|自建|VPS|MyNode|Self|NAT|${regionDefinitions.map(r => r.filter).join('|')})`;
   proxyGroups.push({
     ...groupBaseOption,
@@ -670,11 +671,21 @@ function main(config) {
     icon: 'https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-zy-100.png',
   });
 
-  // 服务策略组
+  // 服务策略组的默认代理列表
   const serviceProxies = ['自选策略', '自建节点', ...regionGroupNames, '其他节点', 'DIRECT'];
 
-  const serviceGroups = [
-    { name: 'AIGC', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/ChatGPT.png' },
+  // ===== AIGC 策略组（特殊处理：只包含美国、台湾、日本节点，手动选择） =====
+  proxyGroups.push({
+    ...groupBaseOption,
+    name: 'AIGC',
+    type: 'select',  // 手动选择
+    'include-all': true,
+    filter: buildFilter(aigcRegionFilter),  // 只匹配美国、台湾、日本
+    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/ChatGPT.png',
+  });
+
+  // 其他服务策略组（保持原样）
+  const otherServiceGroups = [
     { name: 'Apple', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Apple.png' },
     { name: 'Disney', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Disney.png' },
     { name: 'GitHub', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/GitHub.png' },
@@ -690,7 +701,7 @@ function main(config) {
     { name: '交易所', icon: 'https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-btc-94.png' },
   ];
 
-  serviceGroups.forEach(({ name, icon }) => {
+  otherServiceGroups.forEach(({ name, icon }) => {
     proxyGroups.push({
       ...groupBaseOption,
       name,
@@ -733,7 +744,7 @@ function main(config) {
   });
   config['rule-providers'] = ruleProviders;
 
-  // ==================== 7.9 规则（高频规则前置优化） ====================
+  // ==================== 7.9 规则 ====================
   config['rules'] = [
     // ===== 最高优先级：自定义规则 =====
     'DOMAIN-SUFFIX,trdr.io,TRDR',
@@ -741,10 +752,9 @@ function main(config) {
     'DOMAIN-SUFFIX,pplx.ai,AIGC',
     'RULE-SET,binance_domain,交易所',
 
-    // ===== 高频直连（大部分流量命中这里） =====
+    // ===== 高频直连 =====
     'RULE-SET,private_domain,DIRECT',
     'RULE-SET,wechat_domain,WeChat',
-    'RULE-SET,wechat_asn,WeChat,no-resolve',
     'RULE-SET,alibaba_domain,DIRECT',
     'RULE-SET,xiaomi_domain,DIRECT',
     'RULE-SET,bilibili_domain,DIRECT',
