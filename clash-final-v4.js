@@ -1,16 +1,4 @@
-/***
- * Clash Verge Rev / Mihomo Party 全局优化脚本 v4.0 (最终整合版)
- * 
- * 整合优化：
- * 1. 修复地区 regex 空分支问题（GPT 发现）
- * 2. 修复 filter 锚点拼接问题（GPT 发现）
- * 3. 移除 lookbehind 正则，提升兼容性（GPT 建议）
- * 4. 移除未使用的直连节点（GPT 建议）
- * 5. MTU/DNS listen 可配置化（GPT 建议）
- * 6. 保留高频规则前置的性能优化（我的优化）
- * 7. 保留 DNS 防泄漏完整配置（我的优化）
- * 8. 优化代码结构，使用函数封装 filter 生成
- */
+/*Clash Verge Rev / Mihomo Party 全局优化脚本*/
 
 // ==================== 工具函数 ====================
 function stringToArray(str) {
