@@ -1,13 +1,55 @@
-mode: rule
-ipv6: true
-allow-lan: false
+#---------------------------------------------------#
+# DNS 防泄漏配置 v4.2
+# 
+# 使用方法：
+# 1. 在 Clash Verge Rev 中作为 Merge 配置使用
+# 2. 或作为 subconverter 的 clash_rule_base
+#---------------------------------------------------#
 
+# 基础配置
+mixed-port: 7890
+mode: rule
+ipv6: false
+allow-lan: false
+unified-delay: true
+tcp-concurrent: true
+global-ua: clash.meta
+find-process-mode: strict
+global-client-fingerprint: chrome
+log-level: warning
+
+# 连接优化
+keep-alive-idle: 600
+keep-alive-interval: 30
+
+# GEO 数据
+geodata-mode: false
+geodata-loader: memconservative
+geo-auto-update: true
+geo-update-interval: 168
+
+# 外部控制
+external-controller: 127.0.0.1:9090
+external-ui: ui
+external-ui-url: https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip
+
+# GEO 数据源
+geox-url:
+  geosite: https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat
+  mmdb: https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.metadb
+  geoip: https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat
+  asn: https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb
+
+# 存储
 profile:
   store-selected: true
   store-fake-ip: true
 
+# Sniffer
 sniffer:
   enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
   sniff:
     HTTP:
       ports: [80, 8080-8880]
@@ -17,60 +59,84 @@ sniffer:
     QUIC:
       ports: [443, 8443]
   skip-domain:
-    - '*.push.apple.com'
-    - '*.apple.com'
-    - '*.wechat.com'
-    - '*.qq.com'
-    - '*.qpic.cn'
-    - '*.wechatapp.com'
+    - "+.push.apple.com"
+    - "+.apple.com"
+    - "+.wechat.com"
+    - "+.qq.com"
+    - "+.tencent.com"
 
+# TUN
 tun:
   enable: true
-  stack: mixed
+  stack: system
   mtu: 1500
   dns-hijack:
     - any:53
-    - tcp://any:53
   auto-route: true
   auto-detect-interface: true
   strict-route: true
-  inet4-address: 198.18.0.1/16
 
+# DNS 防泄漏配置
 dns:
   enable: true
   listen: 127.0.0.1:1053
-  ipv6: true
-  prefer-h3: false
+  ipv6: false
+  prefer-h3: true
+  use-hosts: true
+  use-system-hosts: false
   respect-rules: true
-
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
-
-  # 只放通用必备，避免引用不存在的 rule-set 导致报错
+  fake-ip-filter-mode: blacklist
   fake-ip-filter:
-    - 'localhost'
-    - '*.local'
-    - '*.lan'
-    - '*.home.arpa'
-    - '*.push.apple.com'
-    - 'time.*'
-    - 'ntp.*'
-
-  # 用于解析 DoH 域名本身（别用系统 DNS）
+    - "*.lan"
+    - "*.local"
+    - "*.localhost"
+    - "time.*.com"
+    - "ntp.*.com"
+    - "+.pool.ntp.org"
+    - "+.msftconnecttest.com"
+    - "+.msftncsi.com"
+    - "localhost.ptlogin2.qq.com"
+    - "localhost.sec.qq.com"
+  
+  # 默认 DNS（用于解析 DoH 域名）
   default-nameserver:
     - 119.29.29.29
     - 223.5.5.5
-
-  # 关键：开启 respect-rules 时必须有这个，否则容易“看起来像泄露”
+  
+  # 代理节点 DNS
   proxy-server-nameserver:
     - https://doh.pub/dns-query
     - https://223.5.5.5/dns-query
-
+  
+  # 直连 DNS
   direct-nameserver:
     - https://doh.pub/dns-query
     - https://223.5.5.5/dns-query
-
-  # 非直连域名的解析（通常会通过代理策略走）
+  direct-nameserver-follow-policy: true
+  
+  # 默认使用国外 DNS（代理流量）
   nameserver:
     - https://dns.google/dns-query
     - https://dns.cloudflare.com/dns-query
+  
+  # DNS 缓存算法
+  cache-algorithm: arc
+  
+  # DNS 分流策略（防泄漏核心）
+  nameserver-policy:
+    # 国内域名 → 国内 DNS
+    "geosite:cn":
+      - https://doh.pub/dns-query
+      - https://223.5.5.5/dns-query
+    "geosite:private":
+      - https://doh.pub/dns-query
+      - https://223.5.5.5/dns-query
+    # 国外域名 → 国外 DNS（防止泄漏）
+    "geosite:geolocation-!cn":
+      - https://dns.google/dns-query
+      - https://dns.cloudflare.com/dns-query
+    "geosite:gfw":
+      - https://dns.google/dns-query
+      - https://dns.cloudflare.com/dns-query
