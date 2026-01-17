@@ -47,7 +47,6 @@ dns:
     - "rule-set:iptv_domain"
     - "rule-set:private_domain"
     - "rule-set:cn_domain"
-
   default-nameserver:
     - 119.29.29.29
     - 180.184.1.1
@@ -59,3 +58,4 @@ dns:
     - "https://223.5.5.5/dns-query"
   nameserver:
     - "https://dns.google/dns-query"
+    - "https://dns.cloudflare.com/dns-query"
