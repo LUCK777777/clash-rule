@@ -1,4 +1,3 @@
-// ==================== 工具函数 ====================
 function stringToArray(str) {
   if (typeof str !== 'string') return [];
   return str.split(';').map(item => item.trim()).filter(item => item.length > 0);
@@ -13,13 +12,12 @@ function safeRegexTest(regex, str) {
   }
 }
 
-// ==================== 1. 静态配置区域 ====================
-const _skipIps = '10.0.0.0/8;100.64.0.0/10;169.254.0.0/16;172.16.0.0/12;192.168.0.0/16;198.18.0.0/16;FC00::/7;FE80::/10;::1/128';
-
-const _chinaDNS = 'https://doh.pub/dns-query;https://223.5.5.5/dns-query';
-const _foreignDNS = 'https://dns.google/dns-query;https://dns.cloudflare.com/dns-query';
+// ==================== 静态配置 ====================
+const _skipIps    = '10.0.0.0/8;100.64.0.0/10;169.254.0.0/16;172.16.0.0/12;192.168.0.0/16;198.18.0.0/16;FC00::/7;FE80::/10;::1/128';
+const _chinaDNS   = '119.29.29.29;223.5.5.5';
+const _foreignDNS = 'https://8.8.8.8/dns-query;https://1.1.1.1/dns-query';
 const _defaultDNS = '119.29.29.29;223.5.5.5';
-const _directDNS = 'https://doh.pub/dns-query;https://223.5.5.5/dns-query';
+const _directDNS  = '119.29.29.29;223.5.5.5';
 
 const args = typeof $arguments !== 'undefined' ? $arguments : {
   enable: true,
@@ -58,32 +56,37 @@ if (typeof globalRatioLimit !== 'number' || globalRatioLimit < 0.1 || globalRati
   globalRatioLimit = 2;
 }
 
+// foreignDNS 用 IP 型 DoH，避免被 google_domain/gfw_domain 规则捕获
+// direct/china/default DNS 用纯 IP，冷启动不依赖任何域名解析
 const dnsPresets = {
   securest: {
-    // ... 其他保持不变
-    // 建议把这里也改了
+    defaultDNS: ['119.29.29.29', '223.5.5.5'],
+    directDNS:  ['119.29.29.29', '223.5.5.5'],
+    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
     foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
   },
   secure: {
-    // ... 其他保持不变
-    // 【修改点 1】给 secure 模式也打上补丁
+    defaultDNS: ['119.29.29.29', '223.5.5.5'],
+    directDNS:  ['119.29.29.29', '223.5.5.5'],
+    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
     foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
   },
   fast: {
-     // ... 保持不变
+    defaultDNS: ['119.29.29.29', '223.5.5.5'],
+    directDNS:  ['119.29.29.29', '223.5.5.5'],
+    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
+    foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
   },
   fastest: {
-    // 您之前已经改好这里了，很好
     defaultDNS: ['119.29.29.29', '223.5.5.5'],
-    directDNS: ['119.29.29.29', '223.5.5.5'],
-    chinaDNS: ['119.29.29.29', '223.5.5.5'],
+    directDNS:  ['119.29.29.29', '223.5.5.5'],
+    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
     foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
   },
   default: {
     defaultDNS: ['119.29.29.29', '223.5.5.5'],
-    directDNS: ['https://doh.pub/dns-query', 'https://223.5.5.5/dns-query'],
-    chinaDNS: ['https://doh.pub/dns-query', 'https://223.5.5.5/dns-query'],
-    // 【修改点 2 - 关键！】把 default 模式也改成 IP，彻底解决问题
+    directDNS:  ['119.29.29.29', '223.5.5.5'],
+    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
     foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
   },
 };
@@ -95,16 +98,14 @@ if (dnsPresets[mode]) {
   ({ defaultDNS, directDNS, chinaDNS, foreignDNS } = dnsPresets.default);
 }
 
-if (typeof skipIps === 'string') skipIps = stringToArray(skipIps);
+if (typeof skipIps    === 'string') skipIps    = stringToArray(skipIps);
 if (typeof defaultDNS === 'string') defaultDNS = stringToArray(defaultDNS);
-if (typeof directDNS === 'string') directDNS = stringToArray(directDNS);
-if (typeof chinaDNS === 'string') chinaDNS = stringToArray(chinaDNS);
+if (typeof directDNS  === 'string') directDNS  = stringToArray(directDNS);
+if (typeof chinaDNS   === 'string') chinaDNS   = stringToArray(chinaDNS);
 if (typeof foreignDNS === 'string') foreignDNS = stringToArray(foreignDNS);
 
-// ==================== 2. 节点过滤规则 ====================
+// ==================== 节点过滤 ====================
 const invalidNodeRegex = /^(断线|删除|订阅|重新|导入|全局|模式|防失联|邮箱|客服|官网|群|邀请|返利|循环|网站|网址|获取|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|工单|贩卖|通知|倒卖|防止|地址|频道|无法|说明|提示|特别|访问|支持|教程|关注|更新|作者|加入|卸载|可解决|只看|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author|traffic)/i;
-
-const selfBuiltRegex = /DIY|自建|VPS|MyNode|Self|NAT/i;
 
 const multiplierRegex = /(?:^|[^\d])([0-9]+(?:\.[0-9]+)?)\s*[xX✕✖⨉倍率]|[xX✕✖⨉倍率]\s*([0-9]+(?:\.[0-9]+)?)(?:[^\d]|$)/;
 
@@ -112,16 +113,10 @@ function extractMultiplier(nodeName) {
   try {
     const match = multiplierRegex.exec(nodeName);
     if (!match) return 1.0;
-    
     const ratioStr = match[1] || match[2];
     if (!ratioStr) return 1.0;
-    
     const ratio = parseFloat(ratioStr);
-    
-    if (Number.isNaN(ratio) || ratio < 0.1 || ratio > 100) {
-      return 1.0;
-    }
-    
+    if (Number.isNaN(ratio) || ratio < 0.1 || ratio > 100) return 1.0;
     return ratio;
   } catch (e) {
     console.warn('倍率提取失败:', nodeName, e.message);
@@ -129,7 +124,7 @@ function extractMultiplier(nodeName) {
   }
 }
 
-// ==================== 3. Filter 生成函数 ====================
+// ==================== Filter 生成 ====================
 const invalidFilterWords = '(断线|删除|订阅|重新|导入|全局|模式|防失联|邮箱|客服|官网|群|邀请|返利|循环|网站|网址|获取|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|工单|贩卖|通知|倒卖|防止|地址|频道|无法|说明|提示|特别|访问|支持|教程|关注|更新|作者|加入|卸载|可解决|只看|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author|traffic)';
 
 function buildFilter(extraPattern) {
@@ -144,7 +139,7 @@ function buildExcludeFilter(excludePattern) {
   return `(?i)^(?!.*${invalidFilterWords})(?!.*${excludePattern}).*$`;
 }
 
-// ==================== 4. 地区定义（【修改点2】已移除韩国节点）====================
+// ==================== 地区定义 ====================
 const regionDefinitions = [
   {
     name: '香港节点',
@@ -185,17 +180,17 @@ const regionDefinitions = [
 
 const aigcRegionFilter = '(美国|美國|United\\s*States|UnitedStates|USA|\\bUS\\b|台湾|台灣|Taiwan|\\bTW\\b|日本|Japan|\\bJP\\b)';
 
-// ==================== 5. 通用配置 ====================
+// ==================== 通用配置 ====================
 const ruleProviderCommon = {
   type: 'http',
   interval: 259200,
-  proxy: 'DIRECT',
+  proxy: '故障转移',
 };
 
 const groupBaseOption = {
   interval: 300,
   timeout: 5000,
-  url: 'https://www.gstatic.com/generate_204',
+  url: 'https://cp.cloudflare.com/generate_204',
   lazy: true,
   'max-failed-times': 3,
   hidden: false,
@@ -207,7 +202,7 @@ const urlTestOption = {
   tolerance: 50,
 };
 
-// ==================== 6. 规则提供者定义（【修改点3】移除 direct_domain）====================
+// ==================== 规则提供者 ====================
 const ruleProviderDefinitions = {
   binance_domain: {
     url: 'https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/rule/binance.list',
@@ -349,43 +344,8 @@ const ruleProviderDefinitions = {
     format: 'mrs',
     behavior: 'domain',
   },
-  bilibili_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bilibili.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
   steam_domain: {
     url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  steam_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam@cn.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  game_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-games@cn.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  bank_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-bank-cn.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  alibaba_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/alibaba.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  xiaomi_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/xiaomi.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  media_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-media-cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
@@ -396,6 +356,11 @@ const ruleProviderDefinitions = {
   },
   'geolocation-!cn': {
     url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs',
+    format: 'mrs',
+    behavior: 'domain',
+  },
+  'tld-not-cn': {
+    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tld-!cn.mrs',
     format: 'mrs',
     behavior: 'domain',
   },
@@ -411,7 +376,7 @@ const ruleProviderDefinitions = {
   },
 };
 
-// ==================== 7. 主函数 ====================
+// ==================== 主函数 ====================
 function main(config) {
   try {
     if (!enable) return config;
@@ -427,7 +392,6 @@ function main(config) {
       throw new Error('配置文件中未找到任何代理');
     }
 
-    // ==================== 7.1 基础配置 ====================
     Object.assign(config, {
       'mode': 'rule',
       'mixed-port': 7890,
@@ -437,24 +401,21 @@ function main(config) {
       'tcp-concurrent': true,
       'global-ua': 'clash.meta',
       'find-process-mode': 'strict',
-      'global-client-fingerprint': 'chrome',
       'log-level': logLevel,
       'keep-alive-idle': 600,
       'keep-alive-interval': 30,
-      'geodata-mode': false,
+      'geodata-mode': true,
       'geodata-loader': 'memconservative',
       'geo-auto-update': true,
       'geo-update-interval': 168,
       'external-controller': '127.0.0.1:9090',
-      'external-ui': 'ui',
-      'external-ui-url': 'https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip',
     });
 
     config['geox-url'] = {
       geosite: 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
-      mmdb: 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.metadb',
-      geoip: 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat',
-      asn: 'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
+      mmdb:    'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.metadb',
+      geoip:   'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip-lite.dat',
+      asn:     'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
     };
 
     config['profile'] = {
@@ -462,27 +423,21 @@ function main(config) {
       'store-fake-ip': true,
     };
 
-    // ==================== 7.2 Sniffer 配置 ====================
     config['sniffer'] = {
       enable: true,
       'force-dns-mapping': true,
       'parse-pure-ip': true,
       sniff: {
         HTTP: { ports: [80, '8080-8880'], 'override-destination': true },
-        TLS: { ports: [443, 8443] },
+        TLS:  { ports: [443, 8443] },
         QUIC: { ports: [443, 8443] },
       },
       'skip-domain': [
-        '+.push.apple.com',
-        '+.apple.com',
-        '+.wechat.com',
-        '+.qq.com',
-        '+.tencent.com',
-        '+.vivox.com',
+        '+.push.apple.com', '+.apple.com',
+        '+.wechat.com', '+.qq.com', '+.tencent.com', '+.vivox.com',
       ],
     };
 
-    // ==================== 7.3 TUN 配置（加强防泄露）====================
     config['tun'] = {
       enable: true,
       stack: 'mixed',
@@ -495,10 +450,9 @@ function main(config) {
       'endpoint-independent-nat': true,
     };
 
-    // ==================== 7.4 DNS 配置（IPv6支持 & Fake-IP增强）====================
-    const dnsNameservers = [...foreignDNS];
+    const dnsNameservers       = [...foreignDNS];
     const dnsDefaultNameserver = [...defaultDNS];
-    
+
     if (ipv6) {
       dnsNameservers.push('2001:4860:4860::8888', '2606:4700:4700::1111');
       dnsDefaultNameserver.push('2400:3200::1', '2400:3200:baba::1');
@@ -507,73 +461,66 @@ function main(config) {
     config['dns'] = {
       enable: true,
       listen: dnsListen,
-      ipv6: ipv6,
-      'prefer-h3': true,
-      'use-hosts': true,
+      ipv6:   ipv6,
+      'prefer-h3':        true,
+      'use-hosts':        true,
       'use-system-hosts': false,
-      'respect-rules': true,
-      'enhanced-mode': 'fake-ip',
-      'fake-ip-range': '198.18.0.1/16',
+      // DNS 查询不走路由规则，防止 8.8.8.8 被 google_ip 捕获后走代理策略组
+      'respect-rules': false,
+      'enhanced-mode':       'fake-ip',
+      'fake-ip-range':       '198.18.0.1/16',
       'fake-ip-filter-mode': 'blacklist',
       'fake-ip-filter': [
-        // 【修改点4】增强 Fake-IP 过滤，防止国产应用异常
-        '*.lan',
-        '*.local',
-        '*.localhost',
-        'time.*.com',
-        'ntp.*.com',
-        '+.pool.ntp.org',
-        '+.msftconnecttest.com',
-        '+.msftncsi.com',
-        'geosite:cn',
-        'geosite:private',
-        '+.stun.*.*',
-        '+.stun.*',
-        '+.wechat.com',
-        '+.kg.qq.com',
-        '+.wanggou.com',
-        '+.jd.com',
-        '+.mi.com',
-        'mesh.ts.net',
+        '*.lan', '*.local', '*.localhost',
+        'time.*.com', 'ntp.*.com', '+.pool.ntp.org',
+        '+.msftconnecttest.com', '+.msftncsi.com',
+        'geosite:cn', 'geosite:private',
+        '+.stun.*.*', '+.stun.*',
+        '+.wechat.com', '+.kg.qq.com', '+.wanggou.com',
+        '+.jd.com', '+.mi.com', 'mesh.ts.net',
       ],
-      'default-nameserver': dnsDefaultNameserver,
-      'proxy-server-nameserver': chinaDNS,
-      'direct-nameserver': directDNS,
-      'direct-nameserver-follow-policy': true,
-      'nameserver': dnsNameservers,
-      'cache-algorithm': 'arc',
+      'default-nameserver':              dnsDefaultNameserver,
+      'proxy-server-nameserver':         chinaDNS,
+      'direct-nameserver':               directDNS,
+      'direct-nameserver-follow-policy': false,
+      'nameserver':                      chinaDNS,
+      'cache-algorithm':                 'arc',
       'nameserver-policy': {
-        'rule-set:cn_domain': chinaDNS,
-        'rule-set:private_domain': directDNS,
-        'rule-set:gfw_domain': foreignDNS,
-        'rule-set:geolocation-!cn': foreignDNS,
-        'geosite:cn': chinaDNS,
-        'geosite:private': directDNS,
+        'rule-set:cn_domain':        chinaDNS,
+        'rule-set:private_domain':   chinaDNS,
+        'geosite:cn':                chinaDNS,
+        'geosite:private':           chinaDNS,
+        'rule-set:microsoft_domain': chinaDNS,
+        'rule-set:apple_domain':     chinaDNS,
+        'rule-set:apple_cn_domain':  chinaDNS,
+        'rule-set:gfw_domain':       foreignDNS,
+        'rule-set:geolocation-!cn':  foreignDNS,
+        'rule-set:google_domain':    foreignDNS,
+        'rule-set:youtube_domain':   foreignDNS,
+        'rule-set:telegram_domain':  foreignDNS,
+        'rule-set:twitter_domain':   foreignDNS,
+        'rule-set:netflix_domain':   foreignDNS,
+        'rule-set:github_domain':    foreignDNS,
+        'rule-set:openai_domain':    foreignDNS,
+        'rule-set:ai!cn_domain':     foreignDNS,
+        'rule-set:discord_domain':   foreignDNS,
+        'rule-set:tld-not-cn':       foreignDNS,
       },
     };
 
-    // ==================== 7.5 代理分类 ====================
+    // ==================== 代理分类 ====================
     const hasProxyProviders = proxyProviderCount > 0;
-
     const regionGroups = {};
-    regionDefinitions.forEach(r => {
-      regionGroups[r.name] = { ...r, proxies: [] };
-    });
+    regionDefinitions.forEach(r => { regionGroups[r.name] = { ...r, proxies: [] }; });
 
     if (!hasProxyProviders) {
       for (let i = 0; i < proxyCount; i++) {
         try {
           const proxy = proxies[i];
-          const name = proxy.name;
-          
+          const name  = proxy.name;
           if (!name || typeof name !== 'string') continue;
           if (safeRegexTest(invalidNodeRegex, name)) continue;
-
-          if (excludeHighPercentage) {
-            const ratio = extractMultiplier(name);
-            if (ratio > globalRatioLimit) continue;
-          }
-
+          if (excludeHighPercentage && extractMultiplier(name) > globalRatioLimit) continue;
           for (const region of regionDefinitions) {
             if (safeRegexTest(region.regex, name)) {
               regionGroups[region.name].proxies.push(name);
@@ -582,84 +529,57 @@ function main(config) {
           }
         } catch (e) {
           console.warn('节点处理失败:', i, e.message);
-          continue;
         }
       }
     }
 
-    // ==================== 7.6 生成地区策略组 ====================
+    // ==================== 地区策略组 ====================
     const generatedRegionGroups = [];
-
     regionDefinitions.forEach(r => {
       try {
         const groupData = regionGroups[r.name];
-
         if (hasProxyProviders) {
           generatedRegionGroups.push({
-            ...urlTestOption,
-            name: r.name,
-            type: 'url-test',
-            icon: r.icon,
-            'include-all': true,
-            filter: buildFilter(r.filter),
+            ...urlTestOption, name: r.name, type: 'url-test', icon: r.icon,
+            'include-all': true, filter: buildFilter(r.filter),
           });
         } else if (groupData.proxies.length > 0) {
           generatedRegionGroups.push({
-            ...urlTestOption,
-            name: r.name,
-            type: 'url-test',
-            icon: r.icon,
+            ...urlTestOption, name: r.name, type: 'url-test', icon: r.icon,
             proxies: groupData.proxies,
           });
         } else {
           generatedRegionGroups.push({
-            ...urlTestOption,
-            name: r.name,
-            type: 'select',
-            icon: r.icon,
+            ...urlTestOption, name: r.name, type: 'select', icon: r.icon,
             proxies: ['DIRECT'],
           });
         }
       } catch (e) {
         console.error('策略组生成失败:', r.name, e.message);
-        generatedRegionGroups.push({
-          name: r.name,
-          type: 'select',
-          proxies: ['DIRECT'],
-        });
+        generatedRegionGroups.push({ name: r.name, type: 'select', proxies: ['DIRECT'] });
       }
     });
 
     const regionGroupNames = generatedRegionGroups.map(g => g.name);
 
-    // ==================== 7.7 构建策略组 ====================
+    // ==================== 构建策略组 ====================
     const proxyGroups = [];
 
     proxyGroups.push({
-      ...groupBaseOption,
-      name: '故障转移',
-      type: 'fallback',
-      'include-all': true,
-      filter: buildValidOnlyFilter(),
-      hidden: true,
+      ...groupBaseOption, name: '故障转移', type: 'fallback',
+      'include-all': true, filter: buildValidOnlyFilter(), hidden: true,
       icon: 'https://pub-8feead0908f649a8b94397f152fb9cba.r2.dev/fallback.png',
     });
 
     proxyGroups.push({
-      ...groupBaseOption,
-      name: '全部节点',
-      type: 'select',
-      'include-all': true,
-      filter: buildValidOnlyFilter(),
+      ...groupBaseOption, name: '全部节点', type: 'select',
+      'include-all': true, filter: buildValidOnlyFilter(),
       icon: 'https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-yu-96.png',
     });
 
     proxyGroups.push({
-      ...groupBaseOption,
-      name: '自建节点',
-      type: 'select',
-      'include-all': true,
-      filter: buildFilter('(DIY|自建|VPS|MyNode|Self|NAT)'),
+      ...groupBaseOption, name: '自建节点', type: 'select',
+      'include-all': true, filter: buildFilter('(DIY|自建|VPS|MyNode|Self|NAT)'),
       icon: 'https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-cloudflare-96.png',
     });
 
@@ -667,117 +587,77 @@ function main(config) {
 
     const otherExclude = `(DIY|自建|VPS|MyNode|Self|NAT|${regionDefinitions.map(r => r.filter).join('|')})`;
     proxyGroups.push({
-      ...groupBaseOption,
-      name: '其他节点',
-      type: 'select',
-      'include-all': true,
-      filter: buildExcludeFilter(otherExclude),
+      ...groupBaseOption, name: '其他节点', type: 'select',
+      'include-all': true, filter: buildExcludeFilter(otherExclude),
       icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WorldMap.png',
     });
 
-    const selectProxies = ['自建节点', ...regionGroupNames, '其他节点', 'DIRECT'];
-    
-    // 【修改点5】服务策略组的候选列表，移除了 "自选策略"
+    const selectProxies  = ['自建节点', ...regionGroupNames, '其他节点', 'DIRECT'];
     const serviceProxies = ['自建节点', ...regionGroupNames, '其他节点', 'DIRECT'];
 
     proxyGroups.push({
-      ...groupBaseOption,
-      name: '自选策略',
-      type: 'select',
-      proxies: selectProxies,
+      ...groupBaseOption, name: '自选策略', type: 'select', proxies: selectProxies,
       icon: 'https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-zy-100.png',
     });
 
-    // 【修改点6】AIGC 策略组：使用 aigcRegionFilter (美/日/台) 进行过滤
     proxyGroups.push({
-      ...groupBaseOption,
-      name: 'AIGC',
-      type: 'select',
-      'include-all': true,
-      filter: buildFilter(aigcRegionFilter), // 只保留美国/日本/台湾
+      ...groupBaseOption, name: 'AIGC', type: 'select',
+      'include-all': true, filter: buildFilter(aigcRegionFilter),
       icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/ChatGPT.png',
     });
 
-    const otherServiceGroups = [
-      { name: 'Apple', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Apple.png' },
-      { name: 'Disney', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Disney.png' },
-      { name: 'GitHub', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/GitHub.png' },
-      { name: 'Google', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Google.png' },
+    [
+      { name: 'Apple',     icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Apple.png' },
+      { name: 'Disney',    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Disney.png' },
+      { name: 'GitHub',    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/GitHub.png' },
+      { name: 'Google',    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Google.png' },
       { name: 'Microsoft', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Microsoft.png' },
-      { name: 'Netflix', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Netflix.png' },
-      { name: 'PayPal', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/PayPal.png' },
-      { name: 'Spotify', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Spotify.png' },
-      { name: 'Telegram', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Telegram.png' },
-      { name: 'TikTok', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/TikTok.png' },
-      { name: 'Twitter', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Twitter.png' },
-      { name: 'YouTube', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/YouTube.png' },
-      { name: '交易所', icon: 'https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-btc-94.png' },
-    ];
-
-    otherServiceGroups.forEach(({ name, icon }) => {
-      proxyGroups.push({
-        ...groupBaseOption,
-        name,
-        type: 'select',
-        proxies: serviceProxies, // 不再包含“自选策略”
-        icon,
-      });
+      { name: 'Netflix',   icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Netflix.png' },
+      { name: 'PayPal',    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/PayPal.png' },
+      { name: 'Spotify',   icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Spotify.png' },
+      { name: 'Telegram',  icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Telegram.png' },
+      { name: 'TikTok',    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/TikTok.png' },
+      { name: 'Twitter',   icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Twitter.png' },
+      { name: 'YouTube',   icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/YouTube.png' },
+      { name: '交易所',    icon: 'https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-btc-94.png' },
+    ].forEach(({ name, icon }) => {
+      proxyGroups.push({ ...groupBaseOption, name, type: 'select', proxies: serviceProxies, icon });
     });
 
     proxyGroups.push({
-      ...groupBaseOption,
-      name: 'WeChat',
-      type: 'select',
+      ...groupBaseOption, name: 'WeChat', type: 'select',
       proxies: ['DIRECT', ...regionGroupNames],
       icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WeChat.png',
     });
 
     proxyGroups.push({
-      ...groupBaseOption,
-      name: 'TRDR',
-      type: 'select',
-      'include-all': true,
-      filter: buildValidOnlyFilter(),
+      ...groupBaseOption, name: 'TRDR', type: 'select',
+      'include-all': true, filter: buildValidOnlyFilter(),
       icon: 'https://raw.githubusercontent.com/LUCK777777/photo/main/icons8-usdt144.png',
     });
 
     config['proxy-groups'] = proxyGroups;
 
-    // ==================== 7.8 规则提供者 ====================
+    // ==================== 规则提供者 ====================
     const ruleProviders = {};
     Object.entries(ruleProviderDefinitions).forEach(([key, value]) => {
-      ruleProviders[key] = {
-        ...ruleProviderCommon,
-        behavior: value.behavior,
-        format: value.format,
-        url: value.url,
-      };
+      ruleProviders[key] = { ...ruleProviderCommon, behavior: value.behavior, format: value.format, url: value.url };
     });
     config['rule-providers'] = ruleProviders;
 
-    // ==================== 7.9 规则 ====================
+    // ==================== 规则 ====================
     config['rules'] = [
       'DOMAIN-SUFFIX,trdr.io,TRDR',
       'DOMAIN-SUFFIX,perplexity.ai,AIGC',
       'DOMAIN-SUFFIX,pplx.ai,AIGC',
       'RULE-SET,binance_domain,交易所',
+
+      'RULE-SET,private_domain,DIRECT',
+      'RULE-SET,private_ip,DIRECT,no-resolve',
+
       'RULE-SET,github_domain,GitHub',
       'RULE-SET,openai_domain,AIGC',
       'RULE-SET,ai!cn_domain,AIGC',
-      'RULE-SET,private_domain,DIRECT',
-      'RULE-SET,private_ip,DIRECT,no-resolve',
-      'RULE-SET,cn_ip,DIRECT,no-resolve',
-      'RULE-SET,wechat_domain,WeChat',
-      'RULE-SET,apple_cn_domain,DIRECT',
-      'RULE-SET,ai_cn_domain,DIRECT',
-      'RULE-SET,alibaba_domain,DIRECT',
-      'RULE-SET,xiaomi_domain,DIRECT',
-      'RULE-SET,bilibili_domain,DIRECT',
-      'RULE-SET,bank_cn_domain,DIRECT',
-      'RULE-SET,game_cn_domain,DIRECT',
-      'RULE-SET,media_cn_domain,DIRECT',
-      'RULE-SET,steam_cn_domain,DIRECT',
-      'RULE-SET,cn_domain,DIRECT', // 【修改点7】用 cn_domain 替换了 direct_domain
       'RULE-SET,twitter_domain,Twitter',
       'RULE-SET,twitter_ip,Twitter,no-resolve',
       'RULE-SET,youtube_domain,YouTube',
@@ -790,32 +670,34 @@ function main(config) {
       'RULE-SET,disney_domain,Disney',
       'RULE-SET,spotify_domain,Spotify',
       'RULE-SET,tiktok_domain,TikTok',
-      'RULE-SET,twitch_domain,自选策略',
-      'RULE-SET,bahamut_domain,台湾节点',
       'RULE-SET,microsoft_domain,Microsoft',
       'RULE-SET,apple_domain,Apple',
       'RULE-SET,paypal_domain,PayPal',
+
+      'RULE-SET,wechat_domain,WeChat',
+      'RULE-SET,apple_cn_domain,DIRECT',
+      'RULE-SET,ai_cn_domain,DIRECT',
+      'RULE-SET,cn_domain,DIRECT',
+
+      'RULE-SET,twitch_domain,自选策略',
+      'RULE-SET,bahamut_domain,台湾节点',
       'RULE-SET,discord_domain,自选策略',
       'RULE-SET,steam_domain,自选策略',
       'RULE-SET,media!cn_domain,自选策略',
       'RULE-SET,gfw_domain,自选策略',
       'RULE-SET,geolocation-!cn,自选策略',
-      'RULE-SET,cn_domain,DIRECT',
+      'RULE-SET,tld-not-cn,自选策略',
+
+      'RULE-SET,cn_ip,DIRECT,no-resolve',
       'MATCH,自选策略',
     ];
 
-    // ==================== 7.10 配置统计 ====================
     if (logLevel === 'info' || logLevel === 'debug') {
       console.log('='.repeat(50));
       console.log('📊 Clash 配置统计');
-      console.log('='.repeat(50));
-      console.log(`代理节点数: ${proxyCount}`);
-      console.log(`订阅源数: ${proxyProviderCount}`);
-      console.log(`策略组数: ${proxyGroups.length}`);
-      console.log(`规则数: ${config['rules'].length}`);
-      console.log(`规则提供者: ${Object.keys(ruleProviders).length}`);
-      console.log(`IPv6支持: ${ipv6 ? '已启用' : '未启用'}`);
-      console.log(`TUN模式: ${config['tun'].stack}`);
+      console.log(`代理节点数: ${proxyCount} | 订阅源数: ${proxyProviderCount}`);
+      console.log(`策略组数: ${proxyGroups.length} | 规则数: ${config['rules'].length}`);
+      console.log(`规则提供者: ${Object.keys(ruleProviders).length} | IPv6: ${ipv6 ? '已启用' : '未启用'}`);
       console.log('='.repeat(50));
     }
 
