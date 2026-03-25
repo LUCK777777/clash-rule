@@ -190,7 +190,7 @@ const ruleProviderCommon = {
 const groupBaseOption = {
   interval: 300,
   timeout: 5000,
-  url: 'https://cp.cloudflare.com/generate_204',
+  url: 'http://cp.cloudflare.com/generate_204',
   lazy: true,
   'max-failed-times': 3,
   hidden: false,
@@ -403,7 +403,7 @@ function main(config) {
       'find-process-mode': 'strict',
       'log-level': logLevel,
       'keep-alive-idle': 600,
-      'keep-alive-interval': 30,
+      'keep-alive-interval': 15,
       'geodata-mode': true,
       'geodata-loader': 'memconservative',
       'geo-auto-update': true,
@@ -465,8 +465,7 @@ function main(config) {
       'prefer-h3':        true,
       'use-hosts':        true,
       'use-system-hosts': false,
-      // DNS 查询不走路由规则，防止 8.8.8.8 被 google_ip 捕获后走代理策略组
-      'respect-rules': false,
+      'respect-rules': true,
       'enhanced-mode':       'fake-ip',
       'fake-ip-range':       '198.18.0.1/16',
       'fake-ip-filter-mode': 'blacklist',
@@ -483,28 +482,11 @@ function main(config) {
       'proxy-server-nameserver':         chinaDNS,
       'direct-nameserver':               directDNS,
       'direct-nameserver-follow-policy': false,
-      'nameserver':                      chinaDNS,
+      'nameserver':                      dnsNameservers,
       'cache-algorithm':                 'arc',
       'nameserver-policy': {
-        'rule-set:cn_domain':        chinaDNS,
-        'rule-set:private_domain':   chinaDNS,
-        'geosite:cn':                chinaDNS,
-        'geosite:private':           chinaDNS,
-        'rule-set:microsoft_domain': chinaDNS,
-        'rule-set:apple_domain':     chinaDNS,
-        'rule-set:apple_cn_domain':  chinaDNS,
-        'rule-set:gfw_domain':       foreignDNS,
-        'rule-set:geolocation-!cn':  foreignDNS,
-        'rule-set:google_domain':    foreignDNS,
-        'rule-set:youtube_domain':   foreignDNS,
-        'rule-set:telegram_domain':  foreignDNS,
-        'rule-set:twitter_domain':   foreignDNS,
-        'rule-set:netflix_domain':   foreignDNS,
-        'rule-set:github_domain':    foreignDNS,
-        'rule-set:openai_domain':    foreignDNS,
-        'rule-set:ai!cn_domain':     foreignDNS,
-        'rule-set:discord_domain':   foreignDNS,
-        'rule-set:tld-not-cn':       foreignDNS,
+        'geosite:private,cn,geolocation-cn': chinaDNS,
+        'geosite:gfw,geolocation-!cn':       dnsNameservers,
       },
     };
 
@@ -647,6 +629,10 @@ function main(config) {
 
     // ==================== 规则 ====================
     config['rules'] = [
+      // 让 foreignDNS (1.1.1.1/1.0.0.1) 走代理，respect-rules:true 下不被 google_ip 捕获
+      'IP-CIDR,1.1.1.1/32,自选策略,no-resolve',
+      'IP-CIDR,1.0.0.1/32,自选策略,no-resolve',
+
       'DOMAIN-SUFFIX,trdr.io,TRDR',
       'DOMAIN-SUFFIX,perplexity.ai,AIGC',
       'DOMAIN-SUFFIX,pplx.ai,AIGC',
