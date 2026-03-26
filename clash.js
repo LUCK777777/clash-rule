@@ -14,9 +14,9 @@ function safeRegexTest(regex, str) {
 
 // ==================== 静态配置 ====================
 const _skipIps    = '10.0.0.0/8;100.64.0.0/10;169.254.0.0/16;172.16.0.0/12;192.168.0.0/16;198.18.0.0/16;FC00::/7;FE80::/10;::1/128';
-const _chinaDNS   = '119.29.29.29;223.5.5.5';
-const _foreignDNS = 'https://8.8.8.8/dns-query;https://1.1.1.1/dns-query';
-const _defaultDNS = '119.29.29.29;223.5.5.5';
+const _chinaDNS   = '119.29.29.29;223.5.5.5'; 
+const _foreignDNS = 'https://1.1.1.1/dns-query;https://8.8.8.8/dns-query'; 
+const _defaultDNS = '119.29.29.29;223.5.5.5'; 
 const _directDNS  = '119.29.29.29;223.5.5.5';
 
 const args = typeof $arguments !== 'undefined' ? $arguments : {
@@ -56,48 +56,6 @@ if (typeof globalRatioLimit !== 'number' || globalRatioLimit < 0.1 || globalRati
   globalRatioLimit = 2;
 }
 
-// foreignDNS 用 IP 型 DoH，避免被 google_domain/gfw_domain 规则捕获
-// direct/china/default DNS 用纯 IP，冷启动不依赖任何域名解析
-const dnsPresets = {
-  securest: {
-    defaultDNS: ['119.29.29.29', '223.5.5.5'],
-    directDNS:  ['119.29.29.29', '223.5.5.5'],
-    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
-    foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
-  },
-  secure: {
-    defaultDNS: ['119.29.29.29', '223.5.5.5'],
-    directDNS:  ['119.29.29.29', '223.5.5.5'],
-    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
-    foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
-  },
-  fast: {
-    defaultDNS: ['119.29.29.29', '223.5.5.5'],
-    directDNS:  ['119.29.29.29', '223.5.5.5'],
-    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
-    foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
-  },
-  fastest: {
-    defaultDNS: ['119.29.29.29', '223.5.5.5'],
-    directDNS:  ['119.29.29.29', '223.5.5.5'],
-    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
-    foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
-  },
-  default: {
-    defaultDNS: ['119.29.29.29', '223.5.5.5'],
-    directDNS:  ['119.29.29.29', '223.5.5.5'],
-    chinaDNS:   ['119.29.29.29', '223.5.5.5'],
-    foreignDNS: ['https://8.8.8.8/dns-query', 'https://1.1.1.1/dns-query'],
-  },
-};
-
-if (dnsPresets[mode]) {
-  ({ defaultDNS, directDNS, chinaDNS, foreignDNS } = dnsPresets[mode]);
-} else {
-  console.warn(`DNS 模式 "${mode}" 不存在，使用 default 模式`);
-  ({ defaultDNS, directDNS, chinaDNS, foreignDNS } = dnsPresets.default);
-}
-
 if (typeof skipIps    === 'string') skipIps    = stringToArray(skipIps);
 if (typeof defaultDNS === 'string') defaultDNS = stringToArray(defaultDNS);
 if (typeof directDNS  === 'string') directDNS  = stringToArray(directDNS);
@@ -105,7 +63,11 @@ if (typeof chinaDNS   === 'string') chinaDNS   = stringToArray(chinaDNS);
 if (typeof foreignDNS === 'string') foreignDNS = stringToArray(foreignDNS);
 
 // ==================== 节点过滤 ====================
-const invalidNodeRegex = /^(断线|删除|订阅|重新|导入|全局|模式|防失联|邮箱|客服|官网|群|邀请|返利|循环|网站|网址|获取|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|工单|贩卖|通知|倒卖|防止|地址|频道|无法|说明|提示|特别|访问|支持|教程|关注|更新|作者|加入|卸载|可解决|只看|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author|traffic)/i;
+const invalidWordsArray = [
+  '断线','删除','订阅','重新','导入','全局','模式','防失联','邮箱','客服','官网','群','邀请','返利','循环','网站','网址','获取','流量','到期','机场','下次','版本','官址','备用','过期','已用','联系','工单','贩卖','通知','倒卖','防止','地址','频道','无法','说明','提示','特别','访问','支持','教程','关注','更新','作者','加入','卸载','可解决','只看','USE','USED','TOTAL','EXPIRE','EMAIL','Panel','Channel','Author','traffic'
+];
+const invalidFilterWords = `(${invalidWordsArray.join('|')})`;
+const invalidNodeRegex = new RegExp(invalidFilterWords, 'i');
 
 const multiplierRegex = /(?:^|[^\d])([0-9]+(?:\.[0-9]+)?)\s*[xX✕✖⨉倍率]|[xX✕✖⨉倍率]\s*([0-9]+(?:\.[0-9]+)?)(?:[^\d]|$)/;
 
@@ -125,250 +87,75 @@ function extractMultiplier(nodeName) {
 }
 
 // ==================== Filter 生成 ====================
-const invalidFilterWords = '(断线|删除|订阅|重新|导入|全局|模式|防失联|邮箱|客服|官网|群|邀请|返利|循环|网站|网址|获取|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|工单|贩卖|通知|倒卖|防止|地址|频道|无法|说明|提示|特别|访问|支持|教程|关注|更新|作者|加入|卸载|可解决|只看|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author|traffic)';
-
 function buildFilter(extraPattern) {
   return `(?i)^(?!.*${invalidFilterWords}).*${extraPattern}.*$`;
 }
-
 function buildValidOnlyFilter() {
   return `(?i)^(?!.*${invalidFilterWords}).*$`;
 }
-
 function buildExcludeFilter(excludePattern) {
   return `(?i)^(?!.*${invalidFilterWords})(?!.*${excludePattern}).*$`;
 }
 
 // ==================== 地区定义 ====================
 const regionDefinitions = [
-  {
-    name: '香港节点',
-    code: 'HK',
-    regex: /(香港|Hong\s*Kong|HongKong|\bHK\b)/i,
-    filter: '(香港|Hong\\s*Kong|HongKong|\\bHK\\b)',
-    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/HongKong.png',
-  },
-  {
-    name: '狮城节点',
-    code: 'SG',
-    regex: /(新加坡|狮城|獅城|Singapore|\bSG\b)/i,
-    filter: '(新加坡|狮城|獅城|Singapore|\\bSG\\b)',
-    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Singapore.png',
-  },
-  {
-    name: '日本节点',
-    code: 'JP',
-    regex: /(日本|Japan|\bJP\b)/i,
-    filter: '(日本|Japan|\\bJP\\b)',
-    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Japan.png',
-  },
-  {
-    name: '台湾节点',
-    code: 'TW',
-    regex: /(台湾|台灣|Taiwan|\bTW\b)/i,
-    filter: '(台湾|台灣|Taiwan|\\bTW\\b)',
-    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Taiwan.png',
-  },
-  {
-    name: '美国节点',
-    code: 'US',
-    regex: /(美国|美國|United\s*States|UnitedStates|USA|\bUS\b)/i,
-    filter: '(美国|美國|United\\s*States|UnitedStates|USA|\\bUS\\b)',
-    icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/UnitedStates.png',
-  },
+  { name: '香港节点', code: 'HK', regex: /(香港|Hong\s*Kong|HongKong|\bHK\b)/i, filter: '(香港|Hong\\s*Kong|HongKong|\\bHK\\b)', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/HongKong.png' },
+  { name: '狮城节点', code: 'SG', regex: /(新加坡|狮城|獅城|Singapore|\bSG\b)/i, filter: '(新加坡|狮城|獅城|Singapore|\\bSG\\b)', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Singapore.png' },
+  { name: '日本节点', code: 'JP', regex: /(日本|Japan|\bJP\b)/i, filter: '(日本|Japan|\\bJP\\b)', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Japan.png' },
+  { name: '台湾节点', code: 'TW', regex: /(台湾|台灣|Taiwan|\bTW\b)/i, filter: '(台湾|台灣|Taiwan|\\bTW\\b)', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/Taiwan.png' },
+  { name: '美国节点', code: 'US', regex: /(美国|美國|United\s*States|UnitedStates|USA|\bUS\b)/i, filter: '(美国|美國|United\\s*States|UnitedStates|USA|\\bUS\\b)', icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/UnitedStates.png' },
 ];
 
 const aigcRegionFilter = '(美国|美國|United\\s*States|UnitedStates|USA|\\bUS\\b|台湾|台灣|Taiwan|\\bTW\\b|日本|Japan|\\bJP\\b)';
 
 // ==================== 通用配置 ====================
-const ruleProviderCommon = {
-  type: 'http',
-  interval: 259200,
-  proxy: '故障转移',
-};
-
+const ruleProviderCommon = { type: 'http', interval: 259200, proxy: '故障转移' };
 const groupBaseOption = {
   interval: 300,
   timeout: 5000,
-  url: 'https://cp.cloudflare.com/generate_204',
+  url: 'http://cp.cloudflare.com/generate_204', 
   lazy: true,
   'max-failed-times': 3,
   hidden: false,
 };
-
-const urlTestOption = {
-  ...groupBaseOption,
-  interval: 600,
-  tolerance: 50,
-};
+const urlTestOption = { ...groupBaseOption, interval: 600, tolerance: 50 };
 
 // ==================== 规则提供者 ====================
 const ruleProviderDefinitions = {
-  binance_domain: {
-    url: 'https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/rule/binance.list',
-    format: 'text',
-    behavior: 'classical',
-  },
-  private_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  'ai!cn_domain': {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  openai_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/openai.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  ai_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-cn.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  google_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  youtube_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  google_ip: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/google.mrs',
-    format: 'mrs',
-    behavior: 'ipcidr',
-  },
-  microsoft_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  github_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/github.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  apple_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  apple_cn_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple-cn.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  telegram_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  telegram_ip: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs',
-    format: 'mrs',
-    behavior: 'ipcidr',
-  },
-  twitter_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitter.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  twitter_ip: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/twitter.mrs',
-    format: 'mrs',
-    behavior: 'ipcidr',
-  },
-  netflix_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/netflix.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  netflix_ip: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/netflix.mrs',
-    format: 'mrs',
-    behavior: 'ipcidr',
-  },
-  disney_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/disney.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  spotify_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/spotify.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  tiktok_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  twitch_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitch.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  bahamut_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bahamut.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  paypal_domain: {
-    url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/PayPal/PayPal.yaml',
-    format: 'yaml',
-    behavior: 'classical',
-  },
-  wechat_domain: {
-    url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/WeChat/WeChat.yaml',
-    format: 'yaml',
-    behavior: 'classical',
-  },
-  discord_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/discord.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  'media!cn_domain': {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-social-media-!cn.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  steam_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  gfw_domain: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/gfw.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  'geolocation-!cn': {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs',
-    format: 'mrs',
-    behavior: 'domain',
-  },
-  cn_ip: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs',
-    format: 'mrs',
-    behavior: 'ipcidr',
-  },
-  private_ip: {
-    url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.mrs',
-    format: 'mrs',
-    behavior: 'ipcidr',
-  },
+  binance_domain: { url: 'https://raw.githubusercontent.com/LUCK777777/clash-rule/refs/heads/main/rule/binance.list', format: 'text', behavior: 'classical' },
+  private_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.mrs', format: 'mrs', behavior: 'domain' },
+  cn_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs', format: 'mrs', behavior: 'domain' },
+  'ai!cn_domain': { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs', format: 'mrs', behavior: 'domain' },
+  openai_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/openai.mrs', format: 'mrs', behavior: 'domain' },
+  ai_cn_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-cn.mrs', format: 'mrs', behavior: 'domain' },
+  google_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.mrs', format: 'mrs', behavior: 'domain' },
+  youtube_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs', format: 'mrs', behavior: 'domain' },
+  google_ip: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/google.mrs', format: 'mrs', behavior: 'ipcidr' },
+  microsoft_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.mrs', format: 'mrs', behavior: 'domain' },
+  github_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/github.mrs', format: 'mrs', behavior: 'domain' },
+  apple_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple.mrs', format: 'mrs', behavior: 'domain' },
+  apple_cn_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple-cn.mrs', format: 'mrs', behavior: 'domain' },
+  telegram_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/telegram.mrs', format: 'mrs', behavior: 'domain' },
+  telegram_ip: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs', format: 'mrs', behavior: 'ipcidr' },
+  twitter_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitter.mrs', format: 'mrs', behavior: 'domain' },
+  twitter_ip: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/twitter.mrs', format: 'mrs', behavior: 'ipcidr' },
+  netflix_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/netflix.mrs', format: 'mrs', behavior: 'domain' },
+  netflix_ip: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/netflix.mrs', format: 'mrs', behavior: 'ipcidr' },
+  disney_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/disney.mrs', format: 'mrs', behavior: 'domain' },
+  spotify_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/spotify.mrs', format: 'mrs', behavior: 'domain' },
+  tiktok_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tiktok.mrs', format: 'mrs', behavior: 'domain' },
+  twitch_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/twitch.mrs', format: 'mrs', behavior: 'domain' },
+  bahamut_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/bahamut.mrs', format: 'mrs', behavior: 'domain' },
+  paypal_domain: { url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/PayPal/PayPal.yaml', format: 'yaml', behavior: 'classical' },
+  wechat_domain: { url: 'https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/WeChat/WeChat.yaml', format: 'yaml', behavior: 'classical' },
+  discord_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/discord.mrs', format: 'mrs', behavior: 'domain' },
+  'media!cn_domain': { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-social-media-!cn.mrs', format: 'mrs', behavior: 'domain' },
+  steam_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/steam.mrs', format: 'mrs', behavior: 'domain' },
+  gfw_domain: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/gfw.mrs', format: 'mrs', behavior: 'domain' },
+  'geolocation-!cn': { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs', format: 'mrs', behavior: 'domain' },
+  'tld-not-cn': { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/tld-!cn.mrs', format: 'mrs', behavior: 'domain' },
+  cn_ip: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs', format: 'mrs', behavior: 'ipcidr' },
+  private_ip: { url: 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.mrs', format: 'mrs', behavior: 'ipcidr' },
 };
 
 // ==================== 主函数 ====================
@@ -398,7 +185,7 @@ function main(config) {
       'find-process-mode': 'strict',
       'log-level': logLevel,
       'keep-alive-idle': 600,
-      'keep-alive-interval': 30,
+      'keep-alive-interval': 15,
       'geodata-mode': true,
       'geodata-loader': 'memconservative',
       'geo-auto-update': true,
@@ -413,10 +200,7 @@ function main(config) {
       asn:     'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
     };
 
-    config['profile'] = {
-      'store-selected': true,
-      'store-fake-ip': true,
-    };
+    config['profile'] = { 'store-selected': true, 'store-fake-ip': true };
 
     config['sniffer'] = {
       enable: true,
@@ -427,10 +211,7 @@ function main(config) {
         TLS:  { ports: [443, 8443] },
         QUIC: { ports: [443, 8443] },
       },
-      'skip-domain': [
-        '+.push.apple.com', '+.apple.com',
-        '+.wechat.com', '+.qq.com', '+.tencent.com', '+.vivox.com',
-      ],
+      'skip-domain': ['+.push.apple.com', '+.apple.com', '+.wechat.com', '+.qq.com', '+.tencent.com', '+.vivox.com'],
     };
 
     config['tun'] = {
@@ -457,11 +238,10 @@ function main(config) {
       enable: true,
       listen: dnsListen,
       ipv6:   ipv6,
-      'prefer-h3':        true,
+      'prefer-h3':        false, 
       'use-hosts':        true,
       'use-system-hosts': false,
-      // DNS 查询不走路由规则，防止 8.8.8.8 被 google_ip 捕获后走代理策略组
-      'respect-rules': false,
+      'respect-rules':    true,
       'enhanced-mode':       'fake-ip',
       'fake-ip-range':       '198.18.0.1/16',
       'fake-ip-filter-mode': 'blacklist',
@@ -475,30 +255,14 @@ function main(config) {
         '+.jd.com', '+.mi.com', 'mesh.ts.net',
       ],
       'default-nameserver':              dnsDefaultNameserver,
-      'proxy-server-nameserver':         chinaDNS,
+      'proxy-server-nameserver':         ['223.5.5.5', '119.29.29.29', '1.1.1.1'], 
       'direct-nameserver':               directDNS,
       'direct-nameserver-follow-policy': false,
       'nameserver':                      dnsNameservers,
       'cache-algorithm':                 'arc',
       'nameserver-policy': {
-        'rule-set:cn_domain':        chinaDNS,
-        'rule-set:private_domain':   chinaDNS,
-        'geosite:cn':                chinaDNS,
-        'geosite:private':           chinaDNS,
-        'rule-set:microsoft_domain': chinaDNS,
-        'rule-set:apple_domain':     chinaDNS,
-        'rule-set:apple_cn_domain':  chinaDNS,
-        'rule-set:gfw_domain':       foreignDNS,
-        'rule-set:geolocation-!cn':  foreignDNS,
-        'rule-set:google_domain':    foreignDNS,
-        'rule-set:youtube_domain':   foreignDNS,
-        'rule-set:telegram_domain':  foreignDNS,
-        'rule-set:twitter_domain':   foreignDNS,
-        'rule-set:netflix_domain':   foreignDNS,
-        'rule-set:github_domain':    foreignDNS,
-        'rule-set:openai_domain':    foreignDNS,
-        'rule-set:ai!cn_domain':     foreignDNS,
-        'rule-set:discord_domain':   foreignDNS,
+        'geosite:private,cn,geolocation-cn': chinaDNS,
+        'geosite:gfw':                       dnsNameservers, 
       },
     };
 
@@ -618,9 +382,10 @@ function main(config) {
       proxyGroups.push({ ...groupBaseOption, name, type: 'select', proxies: serviceProxies, icon });
     });
 
+    // 核心修正：补全 WeChat 策略组中的 自建节点 与 其他节点
     proxyGroups.push({
       ...groupBaseOption, name: 'WeChat', type: 'select',
-      proxies: ['DIRECT', ...regionGroupNames],
+      proxies: ['DIRECT', '自建节点', ...regionGroupNames, '其他节点'],
       icon: 'https://raw.githubusercontent.com/jnlaoshu/MySelf/main/image/WeChat.png',
     });
 
@@ -641,6 +406,11 @@ function main(config) {
 
     // ==================== 规则 ====================
     config['rules'] = [
+      'IP-CIDR,1.1.1.1/32,自选策略,no-resolve',
+      'IP-CIDR,1.0.0.1/32,自选策略,no-resolve',
+      'IP-CIDR,8.8.8.8/32,自选策略,no-resolve',
+      'IP-CIDR,8.8.4.4/32,自选策略,no-resolve',
+
       'DOMAIN-SUFFIX,trdr.io,TRDR',
       'DOMAIN-SUFFIX,perplexity.ai,AIGC',
       'DOMAIN-SUFFIX,pplx.ai,AIGC',
@@ -680,6 +450,7 @@ function main(config) {
       'RULE-SET,media!cn_domain,自选策略',
       'RULE-SET,gfw_domain,自选策略',
       'RULE-SET,geolocation-!cn,自选策略',
+      'RULE-SET,tld-not-cn,自选策略',
 
       'RULE-SET,cn_ip,DIRECT,no-resolve',
       'MATCH,自选策略',
